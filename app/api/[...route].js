@@ -22,6 +22,9 @@
 //   POST /api/guildbase {amount}   -> pool Embers into your guild's base
 //   GET  /api/sponsor | POST /api/sponsor {curve, hours} | GET /api/sponsor/<id>/completers
 //   GET  /api/treasury             -> treasury balances, burns, buybacks, payouts, last season's reward plan
+// no-wallet play:
+//   GET  /api/look?q=<address|@handle>  -> read-only view of any hero (X handles resolve through vibe/vibe guild profiles)
+//   POST /api/pair/start {wallet}  -> a code amount to trade on vibe/vibe | GET /api/pair/check?id= -> session once the trade lands
 // pages: /h/<wallet> (share page with OG tags), /hcard/<wallet>.png (1200x630 hero card)
 const crypto = require("crypto");
 const pg = require("pg");
@@ -145,6 +148,45 @@ async function me(w) {
       progress: q.progress, target: q.target, done: !!q.completed_at, claimed: !!q.claimed_at, expires: q.expires_at, accepted: q.accepted_at,
     })),
   };
+}
+
+// ---------- play without a wallet connection ----------
+async function resolveWho(q) {
+  q = String(q || "").trim();
+  if (ADDR.test(q)) return q.toLowerCase();
+  const h = q.replace(/^@/, "").toLowerCase();
+  if (!/^[a-z0-9_]{1,15}$/.test(h)) return null;
+  const r = (await db.query("select address from vv_guild_members where lower(x_username) = $1 limit 1", [h])).rows[0];
+  return r ? r.address : null;
+}
+async function pairStart(wallet) {
+  if (!ADDR.test(wallet || "")) return { ok: false, error: "bad_wallet" };
+  wallet = wallet.toLowerCase();
+  await db.query("delete from vq_pairs where expires_at < now() - interval '1 day'");
+  const open = new Set((await db.query("select amount::text a from vq_pairs where matched_tx is null and expires_at > now()")).rows.map(r => Number(r.a).toFixed(6)));
+  let amount = null;
+  for (let i = 0; i < 50 && !amount; i++) { const a = (0.002 + (101 + crypto.randomInt(899)) / 1e6).toFixed(6); if (!open.has(a)) amount = a; }
+  if (!amount) return { ok: false, error: "busy" };
+  const id = crypto.randomBytes(16).toString("hex"), expires = new Date(Date.now() + 15 * 60e3);
+  await db.query("insert into vq_pairs (id, wallet, amount, expires_at) values ($1,$2,$3,$4)", [id, wallet, amount, expires]);
+  return { ok: true, id, wallet, amount, expires };
+}
+async function pairCheck(id) {
+  const p = (await db.query("select * from vq_pairs where id=$1", [String(id || "")])).rows[0];
+  if (!p) return { ok: false, error: "no_pair" };
+  if (p.used_at) return { ok: false, error: "used" };
+  if (!p.matched_tx) {
+    if (new Date(p.expires_at) < new Date()) return { ok: false, error: "expired" };
+    // a buy from that wallet, after the code was issued, for exactly the code amount (indexed ETH equals the tx value)
+    const m = (await db.query(`select tx from (select t.tx, t.eth from vv_trades t where t.wallet=$1 and t.side=1 and t.ts >= $2
+        union all select d.tx, d.eth from vv_dex d where d.wallet=$1 and d.side=1 and d.ts >= $2) x where abs(x.eth / 1e18 - $3) < 0.0000005 limit 1`,
+      [p.wallet, Math.floor(new Date(p.created_at).getTime() / 1000) - 5, Number(p.amount)])).rows[0];
+    if (!m) return { ok: true, matched: false, amount: Number(p.amount).toFixed(6), expires: p.expires_at };
+    await db.query("update vq_pairs set matched_tx=$2 where id=$1", [p.id, m.tx]);
+  }
+  const used = await db.query("update vq_pairs set used_at=now() where id=$1 and used_at is null returning wallet", [p.id]);
+  if (!used.rowCount) return { ok: false, error: "used" };
+  return { ok: true, matched: true, wallet: p.wallet, cookie: sessionCookie(p.wallet) };
 }
 
 // ---------- $VQUEST economy: config, prices, Embers ----------
@@ -701,6 +743,20 @@ module.exports = async (req, res) => {
       if (!ok) return send(res, 401, { ok: false, error: "bad_signature" });
       const w = b.address.toLowerCase();
       return send(res, 200, { ok: true, wallet: w }, { "Set-Cookie": sessionCookie(w) });
+    }
+    if (route === "look") {
+      const who = await resolveWho(u.searchParams.get("q"));
+      if (!who) return send(res, 404, { ok: false, error: "not_found" });
+      return send(res, 200, { ok: true, watch: true, ...(await me(who)) });
+    }
+    if (route === "pair/start" && req.method === "POST") {
+      if (limited(req, 20)) return send(res, 429, { ok: false, error: "slow_down" });
+      const b = await readBody(req); return send(res, 200, await pairStart(String(b.wallet || "")));
+    }
+    if (route === "pair/check") {
+      const r = await pairCheck(u.searchParams.get("id"));
+      if (r.matched) return send(res, 200, { ok: true, matched: true, wallet: r.wallet }, { "Set-Cookie": r.cookie });
+      return send(res, 200, r);
     }
     if (route === "logout") return send(res, 200, { ok: true }, { "Set-Cookie": "vq=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" });
 

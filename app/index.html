@@ -179,6 +179,13 @@
   .lbl small{font:500 10px var(--mono);color:#b7bdc0;margin-right:5px}
   .lbl.me{border-color:rgba(223,249,2,.45)} .lbl.ghost{opacity:.6}
   @media (max-width:560px){.lbl{font-size:10px;padding:1px 5px 2px}.lbl small{font-size:9px}}
+  .ways{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .lookf{display:flex;gap:8px;margin-top:14px;width:min(460px,100%)} .lookf input{flex:1;height:44px;border-radius:9px;border:2px solid #2a2f36;background:rgba(0,0,0,.6);color:var(--g0);font:inherit;font-size:14px;padding:0 12px;outline:none} .lookf input:focus{border-color:var(--lime)} .lookf .btn{height:44px}
+  .watchbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#1a1d0a;border:1px solid rgba(223,249,2,.35);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:14px}
+  .watchbar b{font-family:var(--pixel);font-size:9px;color:var(--lime);margin-right:8px} .watchbar .btn{height:34px;font-size:12px}
+  .code{font-family:var(--pixel);font-size:clamp(22px,4vw,34px);color:var(--lime);letter-spacing:.04em;text-shadow:3px 3px 0 #3d4a00}
+  .steps2{counter-reset:s;list-style:none;margin:12px 0 0;padding:0} .steps2 li{counter-increment:s;position:relative;padding:8px 0 8px 34px;color:var(--g1);font-size:14px} .steps2 li::before{content:counter(s);position:absolute;left:0;top:7px;font-family:var(--pixel);font-size:9px;background:var(--lime);color:#000;border-radius:4px;width:22px;height:22px;display:grid;place-items:center}
+  .copyrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px} .copyrow code{font-family:var(--mono);font-size:12px;background:#0a0b0e;border:1px solid #2a2f36;border-radius:6px;padding:6px 8px;word-break:break-all}
   /* tutorial */
   .tut{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
   .tutc{width:min(520px,100%);background:#0d0f13;border:3px solid var(--lime);border-radius:12px;box-shadow:0 0 0 3px #000,0 0 60px rgba(223,249,2,.2);padding:26px 24px 20px;text-align:center;animation:pop .25s cubic-bezier(.2,1.4,.4,1)}
@@ -201,6 +208,7 @@
 </div></header>
 
 <div class="stage">
+  <div class="watchbar" id="watchbar" hidden><span><b>WATCHING</b><span id="watchwho"></span> · you can look around, pair to play</span><span style="display:flex;gap:8px"><button class="btn lime" id="pairnow">PAIR TO PLAY</button><button class="btn ghost" id="stopwatch">EXIT</button></span></div>
   <div class="world" id="world">
     <canvas id="town" width="640" height="360"></canvas>
     <div class="tip" id="tip"></div>
@@ -210,8 +218,9 @@
     <div class="welcome" id="welcome">
       <h1>YOUR TRADES ARE<br>YOUR <em>QUESTS</em></h1>
       <p>Your wallet is your character. Quests complete themselves when you trade on vibe/vibe, verified straight from Robinhood Chain. Forge gear, level up, climb with your guild.</p>
-      <button class="btn lime" id="in">CONNECT WALLET TO PLAY</button>
-      <div class="msg" id="msg">you sign a message to prove the wallet is yours. no transaction, nothing to pay</div>
+      <div class="ways"><button class="btn lime" id="in">CONNECT WALLET</button><button class="btn ghost" id="pairbtn">PLAY WITHOUT CONNECTING</button></div>
+      <form class="lookf" id="lookf"><input id="lookq" placeholder="or just look: your address or @x_handle" autocomplete="off"><button class="btn dark" type="submit">LOOK</button></form>
+      <div class="msg" id="msg">connecting only signs a message, no transaction. or skip it and pair with a normal vibe/vibe trade</div>
       <a href="/guide" style="margin-top:14px;font-family:var(--pixel);font-size:10px;color:var(--lime)">HOW TO PLAY →</a>
     </div>
   </div>
@@ -832,6 +841,25 @@ async function renderWin() {
       ? `<div class="reveal"><canvas id="chestcv" width="200" height="200"></canvas><h4>A CHEST IS WAITING</h4><p>copper for sure, maybe silver, rarely gold. for wallets that traded on vibe/vibe this week.</p><button class="btn lime" id="openchest">OPEN IT</button></div>`
       : `<div class="reveal"><canvas id="chestcv" width="200" height="200"></canvas><h4>ALREADY OPENED TODAY</h4><p>a new chest arrives at 00:00 UTC (${until(nextUtcMidnight())}).</p></div>`;
     drawChestBig(m.chest_open ? 0 : 1);
+  } else if (current === "pair") {
+    wt.innerHTML = `PLAY WITHOUT CONNECTING<small>your next vibe/vibe trade proves the wallet is yours</small>`;
+    const who = (ME && ME.watch && ME.wallet) || "";
+    if (!who && !(PAIR && PAIR.wallet)) {
+      wb.innerHTML = `<p class="note" style="margin:0 0 10px">which wallet do you trade with on vibe/vibe?</p>
+        <form class="lookf" id="pairf" style="margin:0;width:100%"><input id="pairq" placeholder="your address 0x… or @x_handle from your guild profile" autocomplete="off"><button class="btn lime" type="submit">GET MY CODE</button></form>`;
+      return;
+    }
+    await pairEnsure(who || PAIR.wallet); if (current !== "pair") return;
+    if (!PAIR) { wb.innerHTML = '<div class="empty">could not start pairing, try again in a minute</div>'; return; }
+    wb.innerHTML = `<div class="reveal" style="align-items:flex-start;text-align:left">
+      <p class="note" style="margin:0">pairing <span class="mono">${short(PAIR.wallet)}</span></p>
+      <div class="code" id="paircode">${PAIR.amount} ETH</div>
+      <ol class="steps2"><li>open <a href="https://testnet.vibevibe.fun" target="_blank" rel="noopener" style="color:var(--lime)">vibe/vibe</a> with that wallet, like you always do</li>
+        <li>buy <b>any token</b> with ETH for <b>exactly ${PAIR.amount} ETH</b></li>
+        <li>come back here. this page unlocks by itself a few seconds after the trade lands</li></ol>
+      <div class="copyrow"><button class="btn ghost" id="copyamt">COPY AMOUNT</button><span class="note" id="pairstate" style="margin:0">waiting for your trade · ${until(PAIR.expires).replace(" left", "")} left</span></div>
+      <p class="dim" style="font-size:12px">nothing to sign on this site. the trade also counts for your quests. the code works once, for this wallet only.</p></div>`;
+    pairPoll();
   } else if (current === "furnace") {
     wt.innerHTML = `FURNACE<small>burn VQUEST, get Embers to spend in the game</small>`;
     if (!LIVE() && m.economy.launched) { const ec = m.economy, pct = Math.max(2, Math.min(100, ec.curve_eth / ec.grad_eth * 100));
@@ -850,7 +878,9 @@ async function renderWin() {
       <div class="econ"><h4>BURN VQUEST</h4><div class="amt">${[price("extra_swap"), price("forge_epic"), price("forge_mythic"), 5 * price("forge_mythic")].filter(Boolean).map(n => `<button data-amt="${n}">${n >= 1e6 ? fmt(n / 1e6, 1) + "M" : fmt(n / 1e3) + "K"}</button>`).join("")}<button data-amt="max">MAX</button></div>
         <input class="srch sm" id="burnamt" inputmode="decimal" placeholder="amount of VQUEST to burn">
         <button class="btn lime" id="doburn" style="margin-top:10px;width:100%">🔥 BURN FOR EMBERS</button>
-        <p class="note" id="burnmsg">your wallet asks you to confirm a token transfer to 0x…dEaD. Embers land within a few seconds after it confirms.</p></div></div>
+        <p class="note" id="burnmsg">your wallet asks you to confirm a token transfer to 0x…dEaD. Embers land within a few seconds after it confirms.</p>
+        <p class="note" style="margin-top:10px">no wallet connected? send VQUEST from any wallet app to the burn address, Embers land the same way:</p>
+        <div class="copyrow"><code>0x000000000000000000000000000000000000dEaD</code><button class="btn ghost" id="copydead" style="height:30px;font-size:11px">COPY</button></div></div></div>
       <div class="econ"><h4>WHAT EMBERS BUY</h4><div class="list">${[["forge_mythic", "mythic forge (plus 2 diamonds)"], ["forge_legendary", "legendary forge, extra"], ["forge_epic", "epic forge, extra"], ["hard_mode", "hard-mode quests, this week"], ["extra_swap", "another daily swap"], ["arena_slot6", "6th Arena pick, this week"], ["name_color", "name colour (Tailor)"], ["emote_pack", "emote pack (Tailor)"], ["guild_l1", "guild base level 1 (pooled)"], ["sponsor_slot", "24h sponsored quest (builders)"]].map(([k, d]) => `<div><span>${d}</span><span class="price"><b>${fmt(price(k))}</b></span></div>`).join("")}</div></div>`;
     api("vqbalance").then(r => { if ($("vqbal")) $("vqbal").textContent = r && r.ok ? fmt(r.balance, 2) : "?"; if (r && r.ok) $("vqbal").dataset.max = r.balance; }).catch(() => { });
   } else if (current === "tailor") {
@@ -1019,8 +1049,13 @@ function itemIconOver(c, it, t) {   // like itemIcon but without clearing (keeps
   Items.drawGear(g, { [it.slot]: it.template }, 4 * S, 4 * S, S, t);
 }
 
+const ACTIONS = "[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-gchest],[data-buy],[data-color],#doforge,#openchest,#doburn,#dobase,#dosponsor";
+document.addEventListener("click", e => {   // watching someone: anything that would change the hero asks to pair first
+  if (!ME || !ME.watch || !e.target.closest(ACTIONS)) return;
+  e.preventDefault(); e.stopImmediatePropagation(); sfx.click(); openWin("pair");
+}, true);
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-qtab],[data-tier],[data-slot],[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-ftab],[data-fweek],[data-gchest],[data-buy],[data-color],[data-amt],#doburn,#dobase,#dosponsor,#doforge,#openchest,#backforge,#copyhero"); if (!t) return;
+  const t = e.target.closest("[data-qtab],[data-tier],[data-slot],[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-ftab],[data-fweek],[data-gchest],[data-buy],[data-color],[data-amt],#doburn,#dobase,#dosponsor,#copyamt,#copydead,#doforge,#openchest,#backforge,#copyhero"); if (!t) return;
   if (t.dataset.buy) {
     t.disabled = true; const r = await api("buy", { key: t.dataset.buy }).catch(() => null);
     if (!r || !r.ok) { sfx.fail(); toast(errText(r)); t.disabled = false; return; }
@@ -1036,6 +1071,8 @@ document.addEventListener("click", async e => {
   }
   if (t.dataset.amt) { const el = $("burnamt"); el.value = t.dataset.amt === "max" ? ($("vqbal").dataset.max || "") : t.dataset.amt; return; }
   if (t.id === "doburn") return burnVquest();
+  if (t.id === "copyamt" && PAIR) { try { await navigator.clipboard.writeText(PAIR.amount); toast("copied " + PAIR.amount); } catch (_) { toast(PAIR.amount); } return; }
+  if (t.id === "copydead") { try { await navigator.clipboard.writeText("0x000000000000000000000000000000000000dEaD"); toast("burn address copied"); } catch (_) { } return; }
   if (t.id === "dobase") {
     const r = await api("guildbase", { amount: Number($("baseamt").value) }).catch(() => null);
     if (!r || !r.ok) { sfx.fail(); return toast(errText(r)); }
@@ -1093,6 +1130,7 @@ document.addEventListener("click", async e => {
 
 /* ================= live town ================= */
 function syncPos(now) {   // tell the street where you're walking: on every new target, plus a heartbeat
+  if (ME && ME.watch) return;
   const dest = hero.path && hero.path.length ? hero.path[hero.path.length - 1] : [hero.tx, hero.ty];
   const tx = Math.round(dest[0]), ty = Math.round(dest[1]), key = tx + "," + ty;
   if ((key !== sentKey && now - sentAt > 250) || now - sentAt > 15000) {
@@ -1118,6 +1156,7 @@ function townLive() {
 function onlineCount() { $("onn").textContent = OTHERS.size + 1; }
 async function emote(e) {
   if (!ME || !EMO[e]) return;
+  if (ME.watch) return openWin("pair");
   const [text, emoji] = EMO[e]; heroBubble = { text, emoji, t: performance.now() }; sfx.click();
   const r = await api("emote", { e }).catch(() => null);
   if (r && r.error === "slow_down") toast("easy, one emote every few seconds");
@@ -1143,6 +1182,48 @@ async function burnVquest() {
     msg.textContent = "burning… " + tx.slice(0, 12) + "… Embers land when the chain confirms."; sfx.hammer();
   } catch (e) { msg.textContent = e && e.code === 4001 ? "you cancelled" : "could not send: " + (e.message || e); }
 }
+
+/* ================= pairing without a wallet connection ================= */
+let PAIR = (() => { try { const p = JSON.parse(localStorage.getItem("vq_pair") || "null"); return p && Date.parse(p.expires) > Date.now() ? p : null; } catch (_) { return null; } })();
+let pairTimer = null;
+async function pairEnsure(wallet) {
+  if (PAIR && PAIR.wallet === wallet.toLowerCase() && Date.parse(PAIR.expires) > Date.now() + 30e3) return;
+  const r = await api("pair/start", { wallet }).catch(() => null);
+  PAIR = r && r.ok ? { id: r.id, wallet: r.wallet, amount: r.amount, expires: r.expires } : null;
+  try { localStorage.setItem("vq_pair", JSON.stringify(PAIR)); } catch (_) { }
+}
+function pairPoll() {
+  clearTimeout(pairTimer);
+  pairTimer = setTimeout(async () => {
+    if (current !== "pair" || !PAIR) return;
+    const r = await api("pair/check?id=" + PAIR.id).catch(() => null);
+    if (r && r.matched) {
+      PAIR = null; WATCH = ""; try { localStorage.removeItem("vq_pair"); localStorage.removeItem("vq_watch"); } catch (_) { }
+      closeWin(); sfx.level(); confetti(160); banner("PAIRED!", "welcome in, no wallet connected");
+      if (town) { town.close(); town = null; } await load(); return;
+    }
+    if (r && (r.error === "expired" || r.error === "used")) { PAIR = null; return current === "pair" && renderWin(); }
+    const st = $("pairstate"); if (st && PAIR) st.textContent = `waiting for your trade · ${until(PAIR.expires).replace(" left", "")} left`;
+    pairPoll();
+  }, 4000);
+}
+document.addEventListener("submit", async e => {
+  if (e.target.id === "lookf") {
+    e.preventDefault(); const q = $("lookq").value.trim(); if (!q) return;
+    const r = await api("look?q=" + encodeURIComponent(q)).catch(() => null);
+    if (!r || !r.ok) { $("msg").className = "msg err"; $("msg").textContent = q.startsWith("0x") ? "that doesn't look like a wallet address" : "no vibe/vibe guild profile with that X handle (use your address instead)"; return; }
+    WATCH = q; try { localStorage.setItem("vq_watch", q); } catch (_) { } sfx.win(); await load();
+  }
+  if (e.target.id === "pairf") {
+    e.preventDefault(); const q = $("pairq").value.trim();
+    const r = await api("look?q=" + encodeURIComponent(q)).catch(() => null);
+    if (!r || !r.ok) return toast("couldn't find that wallet or handle");
+    WATCH = q; try { localStorage.setItem("vq_watch", q); } catch (_) { } await load(); openWin("pair");
+  }
+});
+$("pairbtn").onclick = () => { sfx.click(); openWin("pair"); };
+$("pairnow").onclick = () => { sfx.click(); openWin("pair"); };
+$("stopwatch").onclick = async () => { WATCH = ""; PAIR = null; try { localStorage.removeItem("vq_watch"); localStorage.removeItem("vq_pair"); } catch (_) { } if (town) { town.close(); town = null; OTHERS.clear(); } ME = null; closeWin(); await load(); };
 
 /* ================= first-visit tutorial ================= */
 const TUT = [
@@ -1179,12 +1260,16 @@ function hud() {
   if ($("gdot")) $("gdot").hidden = !gch;
   $("note").textContent = claimable ? `${claimable} quest reward${claimable > 1 ? "s" : ""} waiting at the Quest Board` : "click anywhere on the plaza to walk, or use the arrow keys / WASD and press E at a door. trade on vibe/vibe and watch the board light up";
 }
+let WATCH = (() => { try { return localStorage.getItem("vq_watch") || ""; } catch (_) { return ""; } })();
 async function load() {
-  const r = await api("me").catch(() => null);
+  let r = await api("me").catch(() => null);
+  if ((!r || !r.ok) && WATCH) { r = await api("look?q=" + encodeURIComponent(WATCH)).catch(() => null); if (!r || !r.ok) { WATCH = ""; try { localStorage.removeItem("vq_watch"); } catch (_) { } } }
+  $("watchbar").hidden = !(r && r.watch);
+  if (r && r.watch) $("watchwho").textContent = (WATCH.startsWith("0x") ? short(r.wallet) : "@" + WATCH.replace(/^@/, "")) + " ";
   if (!r || !r.ok) {
     ME = null; $("online").hidden = true; $("emotes").hidden = true; $("welcome").hidden = false; ["lvlbox", "mats", "out", "help", "quick"].forEach(id => $(id).hidden = true); $("note").textContent = ""; return;
   }
-  const first = !ME; ME = r; hud(); live(); townLive(); $("online").hidden = false; $("emotes").hidden = false;
+  const first = !ME; ME = r; hud(); if (!ME.watch) live(); townLive(); if (ME.watch) $("out").hidden = true; $("online").hidden = false; $("emotes").hidden = false;
   if (ME.unlocks && ME.unlocks.emote_pack && !document.querySelector('[data-emote="wagmi"]')) {
     $("emotes").insertAdjacentHTML("beforeend", ["wagmi", "ngmi", "diamond", "frog", "pray", "skull"].map(k => `<button data-emote="${k}">${EMO[k][0]}</button>`).join(""));
     document.querySelectorAll("[data-emote]").forEach(b => b.onclick = ev => { ev.stopPropagation(); emote(b.dataset.emote); });
