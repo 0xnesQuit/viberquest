@@ -163,9 +163,10 @@ async function pairStart(wallet) {
   if (!ADDR.test(wallet || "")) return { ok: false, error: "bad_wallet" };
   wallet = wallet.toLowerCase();
   await db.query("delete from vq_pairs where expires_at < now() - interval '1 day'");
-  const open = new Set((await db.query("select amount::text a from vq_pairs where matched_tx is null and expires_at > now()")).rows.map(r => Number(r.a).toFixed(6)));
+  // codes are 0.0002100 .. 0.0002999 ETH (well under a dollar), every open pairing gets a different one
+  const open = new Set((await db.query("select amount::text a from vq_pairs where matched_tx is null and expires_at > now()")).rows.map(r => Number(r.a).toFixed(7)));
   let amount = null;
-  for (let i = 0; i < 50 && !amount; i++) { const a = (0.002 + (101 + crypto.randomInt(899)) / 1e6).toFixed(6); if (!open.has(a)) amount = a; }
+  for (let i = 0; i < 80 && !amount; i++) { const a = (0.0002 + (100 + crypto.randomInt(900)) / 1e7).toFixed(7); if (!open.has(a)) amount = a; }
   if (!amount) return { ok: false, error: "busy" };
   const id = crypto.randomBytes(16).toString("hex"), expires = new Date(Date.now() + 15 * 60e3);
   await db.query("insert into vq_pairs (id, wallet, amount, expires_at) values ($1,$2,$3,$4)", [id, wallet, amount, expires]);
@@ -179,7 +180,7 @@ async function selfSend(p) {
   explorerAt.set(p.id, Date.now()); if (explorerAt.size > 5000) explorerAt.clear();
   const r = await fetch(`${EXPLORER}?module=account&action=txlist&address=${p.wallet}&sort=desc&page=1&offset=15`, { signal: AbortSignal.timeout(8000) }).then(x => x.json()).catch(() => null);
   if (!r || !Array.isArray(r.result)) return null;
-  const want = BigInt(Math.round(Number(p.amount) * 1e6)) * 10n ** 12n, since = Math.floor(new Date(p.created_at).getTime() / 1000) - 5;
+  const want = BigInt(Math.round(Number(p.amount) * 1e7)) * 10n ** 11n, since = Math.floor(new Date(p.created_at).getTime() / 1000) - 5;
   const t = r.result.find(x => x.from && x.to && x.from.toLowerCase() === p.wallet && x.to.toLowerCase() === p.wallet && x.isError === "0" && BigInt(x.value || 0) === want && Number(x.timeStamp) >= since);
   return t ? t.hash : null;
 }
@@ -191,10 +192,10 @@ async function pairCheck(id) {
     if (new Date(p.expires_at) < new Date()) return { ok: false, error: "expired" };
     // a buy from that wallet, after the code was issued, for exactly the code amount (indexed ETH equals the tx value)
     const m = (await db.query(`select tx from (select t.tx, t.eth from vv_trades t where t.wallet=$1 and t.side=1 and t.ts >= $2
-        union all select d.tx, d.eth from vv_dex d where d.wallet=$1 and d.side=1 and d.ts >= $2) x where abs(x.eth / 1e18 - $3) < 0.0000005 limit 1`,
+        union all select d.tx, d.eth from vv_dex d where d.wallet=$1 and d.side=1 and d.ts >= $2) x where abs(x.eth / 1e18 - $3) < 0.00000005 limit 1`,
       [p.wallet, Math.floor(new Date(p.created_at).getTime() / 1000) - 5, Number(p.amount)])).rows[0];
     const tx = m ? m.tx : await selfSend(p);
-    if (!tx) return { ok: true, matched: false, amount: Number(p.amount).toFixed(6), expires: p.expires_at };
+    if (!tx) return { ok: true, matched: false, amount: Number(p.amount).toFixed(7), expires: p.expires_at };
     await db.query("update vq_pairs set matched_tx=$2 where id=$1", [p.id, tx]);
   }
   const used = await db.query("update vq_pairs set used_at=now() where id=$1 and used_at is null returning wallet", [p.id]);
