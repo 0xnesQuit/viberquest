@@ -1186,10 +1186,10 @@ async function burnVquest() {
 }
 
 /* ================= pairing without a wallet connection ================= */
-let PAIR = (() => { try { const p = JSON.parse(localStorage.getItem("vq_pair") || "null"); return p && Date.parse(p.expires) > Date.now() ? p : null; } catch (_) { return null; } })();
+let PAIR = (() => { try { const p = JSON.parse(localStorage.getItem("vq_pair") || "null"); return p && Date.parse(p.expires) > Date.now() && Number(p.amount) < 0.001 ? p : null; } catch (_) { return null; } })();
 let pairTimer = null;
 async function pairEnsure(wallet) {
-  if (PAIR && PAIR.wallet === wallet.toLowerCase() && Date.parse(PAIR.expires) > Date.now() + 30e3) return;
+  if (PAIR && PAIR.wallet === wallet.toLowerCase() && Date.parse(PAIR.expires) > Date.now() + 30e3 && Number(PAIR.amount) < 0.001) return;
   const r = await api("pair/start", { wallet }).catch(() => null);
   PAIR = r && r.ok ? { id: r.id, wallet: r.wallet, amount: r.amount, expires: r.expires } : null;
   try { localStorage.setItem("vq_pair", JSON.stringify(PAIR)); } catch (_) { }

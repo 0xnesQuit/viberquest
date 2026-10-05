@@ -66,7 +66,8 @@ function sessionCookie(w) {
 
 // per-IP limiter (Cloudflare passes the client IP)
 const hits = new Map(); setInterval(() => hits.clear(), 60_000).unref();
-const limited = (req, n = 120) => { const ip = req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "?"; const c = (hits.get(ip) || 0) + 1; hits.set(ip, c); return c > n; };
+// each limit has its own counter (key), so a busy page load can't use up the sign-in or pairing allowance
+const limited = (req, n = 120, key = "all") => { const ip = req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "?", k = key + ":" + ip; const c = (hits.get(k) || 0) + 1; hits.set(k, c); return c > n; };
 
 // ---------- quests: which quests a player gets this period ----------
 const dayKey = d => d.toISOString().slice(0, 10);
@@ -746,7 +747,7 @@ module.exports = async (req, res) => {
       return send(res, 200, { ok: true, nonce, message });
     }
     if (route === "login" && req.method === "POST") {
-      if (limited(req, 30)) return send(res, 429, { ok: false, error: "slow_down" });
+      if (limited(req, 30, "login")) return send(res, 429, { ok: false, error: "slow_down" });
       const b = await readBody(req);
       if (!ADDR.test(b.address || "") || typeof b.signature !== "string" || typeof b.message !== "string") return send(res, 400, { ok: false, error: "bad_request" });
       const m = /Nonce: ([0-9a-f]{24})/.exec(b.message);
@@ -764,7 +765,7 @@ module.exports = async (req, res) => {
       return send(res, 200, { ok: true, watch: true, ...(await me(who)) });
     }
     if (route === "pair/start" && req.method === "POST") {
-      if (limited(req, 20)) return send(res, 429, { ok: false, error: "slow_down" });
+      if (limited(req, 20, "pair")) return send(res, 429, { ok: false, error: "slow_down" });
       const b = await readBody(req); return send(res, 200, await pairStart(String(b.wallet || "")));
     }
     if (route === "pair/check") {
@@ -856,7 +857,7 @@ module.exports = async (req, res) => {
     }
     if (route === "pos" && req.method === "POST") {
       if (!w) return send(res, 401, { ok: false, error: "signed_out" });
-      if (limited(req, 600)) return send(res, 429, { ok: false, error: "slow_down" });
+      if (limited(req, 600, "pos")) return send(res, 429, { ok: false, error: "slow_down" });
       const r = await townMove(w, await readBody(req));
       const p = town.players.get(w);
       if (p && !p.streams) for (const st of town.streams) if (st.__w === w) p.streams++;
@@ -864,7 +865,7 @@ module.exports = async (req, res) => {
     }
     if (route === "emote" && req.method === "POST") {
       if (!w) return send(res, 401, { ok: false, error: "signed_out" });
-      if (limited(req, 300)) return send(res, 429, { ok: false, error: "slow_down" });
+      if (limited(req, 300, "emote")) return send(res, 429, { ok: false, error: "slow_down" });
       const b = await readBody(req);
       return send(res, 200, townEmote(w, String(b.e || "")));
     }
