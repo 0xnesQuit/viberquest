@@ -220,7 +220,7 @@
       <p>Your wallet is your character. Quests complete themselves when you trade on vibe/vibe, verified straight from Robinhood Chain. Forge gear, level up, climb with your guild.</p>
       <div class="ways"><button class="btn lime" id="in">CONNECT WALLET</button><button class="btn ghost" id="pairbtn">PLAY WITHOUT CONNECTING</button></div>
       <form class="lookf" id="lookf"><input id="lookq" placeholder="or just look: your address or @x_handle" autocomplete="off"><button class="btn dark" type="submit">LOOK</button></form>
-      <div class="msg" id="msg">connecting only signs a message, no transaction. or skip it and pair with a normal vibe/vibe trade</div>
+      <div class="msg" id="msg">connecting only signs a message, no transaction. or skip it and pair with a tiny transfer to yourself</div>
       <a href="/guide" style="margin-top:14px;font-family:var(--pixel);font-size:10px;color:var(--lime)">HOW TO PLAY →</a>
     </div>
   </div>
@@ -842,7 +842,7 @@ async function renderWin() {
       : `<div class="reveal"><canvas id="chestcv" width="200" height="200"></canvas><h4>ALREADY OPENED TODAY</h4><p>a new chest arrives at 00:00 UTC (${until(nextUtcMidnight())}).</p></div>`;
     drawChestBig(m.chest_open ? 0 : 1);
   } else if (current === "pair") {
-    wt.innerHTML = `PLAY WITHOUT CONNECTING<small>your next vibe/vibe trade proves the wallet is yours</small>`;
+    wt.innerHTML = `PLAY WITHOUT CONNECTING<small>a small transfer to yourself proves the wallet is yours</small>`;
     const who = (ME && ME.watch && ME.wallet) || "";
     if (!who && !(PAIR && PAIR.wallet)) {
       wb.innerHTML = `<p class="note" style="margin:0 0 10px">which wallet do you trade with on vibe/vibe?</p>
@@ -854,11 +854,12 @@ async function renderWin() {
     wb.innerHTML = `<div class="reveal" style="align-items:flex-start;text-align:left">
       <p class="note" style="margin:0">pairing <span class="mono">${short(PAIR.wallet)}</span></p>
       <div class="code" id="paircode">${PAIR.amount} ETH</div>
-      <ol class="steps2"><li>open <a href="https://testnet.vibevibe.fun" target="_blank" rel="noopener" style="color:var(--lime)">vibe/vibe</a> with that wallet, like you always do</li>
-        <li>buy <b>any token</b> with ETH for <b>exactly ${PAIR.amount} ETH</b></li>
-        <li>come back here. this page unlocks by itself a few seconds after the trade lands</li></ol>
-      <div class="copyrow"><button class="btn ghost" id="copyamt">COPY AMOUNT</button><span class="note" id="pairstate" style="margin:0">waiting for your trade · ${until(PAIR.expires).replace(" left", "")} left</span></div>
-      <p class="dim" style="font-size:12px">nothing to sign on this site. the trade also counts for your quests. the code works once, for this wallet only.</p></div>`;
+      <ol class="steps2"><li>in your wallet app, on <b>Robinhood Chain testnet</b>, send <b>exactly ${PAIR.amount} ETH</b> to <b>your own address</b>:
+          <div class="copyrow"><code>${PAIR.wallet}</code><button class="btn ghost" id="copyself" style="height:30px;font-size:11px">COPY</button></div></li>
+        <li>come back here. this page unlocks by itself a few seconds after it confirms</li></ol>
+      <p class="note">or instead: buy <b>any token</b> on <a href="https://testnet.vibevibe.fun" target="_blank" rel="noopener" style="color:var(--lime)">vibe/vibe</a> for exactly ${PAIR.amount} ETH (that one also counts for your quests)</p>
+      <div class="copyrow"><button class="btn ghost" id="copyamt">COPY AMOUNT</button><span class="note" id="pairstate" style="margin:0">waiting for your transfer · ${until(PAIR.expires).replace(" left", "")} left</span></div>
+      <p class="dim" style="font-size:12px">nothing to sign on this site. the ETH goes back to you, you only pay the network fee. the code works once, for this wallet only.</p></div>`;
     pairPoll();
   } else if (current === "furnace") {
     wt.innerHTML = `FURNACE<small>burn VQUEST, get Embers to spend in the game</small>`;
@@ -1055,7 +1056,7 @@ document.addEventListener("click", e => {   // watching someone: anything that w
   e.preventDefault(); e.stopImmediatePropagation(); sfx.click(); openWin("pair");
 }, true);
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-qtab],[data-tier],[data-slot],[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-ftab],[data-fweek],[data-gchest],[data-buy],[data-color],[data-amt],#doburn,#dobase,#dosponsor,#copyamt,#copydead,#doforge,#openchest,#backforge,#copyhero"); if (!t) return;
+  const t = e.target.closest("[data-qtab],[data-tier],[data-slot],[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-ftab],[data-fweek],[data-gchest],[data-buy],[data-color],[data-amt],#doburn,#dobase,#dosponsor,#copyamt,#copydead,#copyself,#doforge,#openchest,#backforge,#copyhero"); if (!t) return;
   if (t.dataset.buy) {
     t.disabled = true; const r = await api("buy", { key: t.dataset.buy }).catch(() => null);
     if (!r || !r.ok) { sfx.fail(); toast(errText(r)); t.disabled = false; return; }
@@ -1072,6 +1073,7 @@ document.addEventListener("click", async e => {
   if (t.dataset.amt) { const el = $("burnamt"); el.value = t.dataset.amt === "max" ? ($("vqbal").dataset.max || "") : t.dataset.amt; return; }
   if (t.id === "doburn") return burnVquest();
   if (t.id === "copyamt" && PAIR) { try { await navigator.clipboard.writeText(PAIR.amount); toast("copied " + PAIR.amount); } catch (_) { toast(PAIR.amount); } return; }
+  if (t.id === "copyself" && PAIR) { try { await navigator.clipboard.writeText(PAIR.wallet); toast("your address copied"); } catch (_) { toast(PAIR.wallet); } return; }
   if (t.id === "copydead") { try { await navigator.clipboard.writeText("0x000000000000000000000000000000000000dEaD"); toast("burn address copied"); } catch (_) { } return; }
   if (t.id === "dobase") {
     const r = await api("guildbase", { amount: Number($("baseamt").value) }).catch(() => null);
@@ -1203,7 +1205,7 @@ function pairPoll() {
       if (town) { town.close(); town = null; } await load(); return;
     }
     if (r && (r.error === "expired" || r.error === "used")) { PAIR = null; return current === "pair" && renderWin(); }
-    const st = $("pairstate"); if (st && PAIR) st.textContent = `waiting for your trade · ${until(PAIR.expires).replace(" left", "")} left`;
+    const st = $("pairstate"); if (st && PAIR) st.textContent = `waiting for your transfer · ${until(PAIR.expires).replace(" left", "")} left`;
     pairPoll();
   }, 4000);
 }

@@ -171,6 +171,18 @@ async function pairStart(wallet) {
   await db.query("insert into vq_pairs (id, wallet, amount, expires_at) values ($1,$2,$3,$4)", [id, wallet, amount, expires]);
   return { ok: true, id, wallet, amount, expires };
 }
+// or a plain ETH transfer from the wallet to itself for the code amount, read from the chain explorer (Blockscout)
+const EXPLORER = "https://explorer.testnet.chain.robinhood.com/api";
+const explorerAt = new Map();
+async function selfSend(p) {
+  const last = explorerAt.get(p.id) || 0; if (Date.now() - last < 7000) return null;   // at most one explorer call per pair every 7 s
+  explorerAt.set(p.id, Date.now()); if (explorerAt.size > 5000) explorerAt.clear();
+  const r = await fetch(`${EXPLORER}?module=account&action=txlist&address=${p.wallet}&sort=desc&page=1&offset=15`, { signal: AbortSignal.timeout(8000) }).then(x => x.json()).catch(() => null);
+  if (!r || !Array.isArray(r.result)) return null;
+  const want = BigInt(Math.round(Number(p.amount) * 1e6)) * 10n ** 12n, since = Math.floor(new Date(p.created_at).getTime() / 1000) - 5;
+  const t = r.result.find(x => x.from && x.to && x.from.toLowerCase() === p.wallet && x.to.toLowerCase() === p.wallet && x.isError === "0" && BigInt(x.value || 0) === want && Number(x.timeStamp) >= since);
+  return t ? t.hash : null;
+}
 async function pairCheck(id) {
   const p = (await db.query("select * from vq_pairs where id=$1", [String(id || "")])).rows[0];
   if (!p) return { ok: false, error: "no_pair" };
@@ -181,8 +193,9 @@ async function pairCheck(id) {
     const m = (await db.query(`select tx from (select t.tx, t.eth from vv_trades t where t.wallet=$1 and t.side=1 and t.ts >= $2
         union all select d.tx, d.eth from vv_dex d where d.wallet=$1 and d.side=1 and d.ts >= $2) x where abs(x.eth / 1e18 - $3) < 0.0000005 limit 1`,
       [p.wallet, Math.floor(new Date(p.created_at).getTime() / 1000) - 5, Number(p.amount)])).rows[0];
-    if (!m) return { ok: true, matched: false, amount: Number(p.amount).toFixed(6), expires: p.expires_at };
-    await db.query("update vq_pairs set matched_tx=$2 where id=$1", [p.id, m.tx]);
+    const tx = m ? m.tx : await selfSend(p);
+    if (!tx) return { ok: true, matched: false, amount: Number(p.amount).toFixed(6), expires: p.expires_at };
+    await db.query("update vq_pairs set matched_tx=$2 where id=$1", [p.id, tx]);
   }
   const used = await db.query("update vq_pairs set used_at=now() where id=$1 and used_at is null returning wallet", [p.id]);
   if (!used.rowCount) return { ok: false, error: "used" };
