@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How to play · Viberquest</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="The Viberquest guide: how the pixel RPG on vibe/vibe works, quests, forge, guilds, the Arena fantasy league and seasons.">
+<meta property="og:title" content="How to play Viberquest"><meta property="og:description" content="Your wallet is your character. Your trades on vibe/vibe are your quests. The full guide.">
+<meta property="og:image" content="https://viberquest.fun/brand/viberquest-banner.png"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000"><link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:"Clash Display";src:url(/fonts/ClashDisplay-Semibold.woff2) format("woff2");font-weight:600;font-display:swap}
+  :root{--lime:#dff902;--bg:#05060a;--panel:#0d0f13;--panel2:#12151a;--line:#23282f;--g0:#f2f4f3;--g1:#b7bdc0;--g2:#7d848a;--up:#5bd08a;--dn:#ff8a7a;
+    --copper:#d9844a;--silver:#c9d2d8;--gold:#ffd23f;--diamond:#8fe9ff;--common:#b7bdc0;--rare:#5b9dff;--epic:#b26bff;--legendary:#ffd23f;
+    --display:"Clash Display",system-ui,sans-serif;--ui:"Instrument Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;--pixel:"Press Start 2P",monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{background:var(--bg);color:var(--g0);font-family:var(--ui);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
+  a{color:var(--lime);text-decoration:none} a:hover{text-decoration:underline}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+  .top{position:sticky;top:0;z-index:10;background:rgba(5,6,10,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo{font-family:var(--pixel);font-size:13px;color:var(--lime);text-shadow:2px 2px 0 #3d4a00}
+  .logo small{font-family:var(--mono);font-size:10px;color:var(--g2);margin-left:10px;text-shadow:none}
+  .play{font-family:var(--pixel);font-size:10px;background:var(--lime);color:#000;padding:11px 14px;border-radius:7px;box-shadow:0 3px 0 #8fa000;white-space:nowrap} .play:hover{text-decoration:none;background:#ecff4d}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:220px 1fr;gap:40px}
+  nav.toc{position:sticky;top:76px;align-self:start;padding:28px 0;max-height:calc(100vh - 80px);overflow:auto}
+  nav.toc b{display:block;font-family:var(--pixel);font-size:8px;color:var(--g2);margin-bottom:12px}
+  nav.toc a{display:block;color:var(--g1);font-size:14px;padding:5px 10px;border-left:2px solid var(--line)} nav.toc a:hover{color:var(--g0);text-decoration:none;border-color:var(--g2)} nav.toc a.on{color:var(--lime);border-color:var(--lime)}
+  main{padding:28px 0 80px;min-width:0}
+  .hero{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:28px;border:2px solid var(--line);border-radius:16px;background:radial-gradient(ellipse at 80% 50%,rgba(223,249,2,.08),transparent 60%),var(--panel)}
+  .hero h1{font-family:var(--pixel);font-size:clamp(20px,3.4vw,34px);line-height:1.35}
+  .hero h1 em{font-style:normal;color:var(--lime)}
+  .hero p{color:var(--g1);font-size:17px;margin-top:14px;max-width:560px}
+  .hero canvas{width:180px;height:180px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .pill{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;color:var(--g1)}
+  section{margin-top:56px}
+  h2{font-family:var(--display);font-weight:600;font-size:30px;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;gap:12px}
+  h2 .n{font-family:var(--pixel);font-size:10px;color:#000;background:var(--lime);border-radius:5px;padding:6px 7px}
+  h3{font-family:var(--display);font-weight:600;font-size:20px;text-transform:uppercase;margin:26px 0 8px}
+  p{color:var(--g1);margin-top:10px} p b,li b{color:var(--g0)}
+  ul,ol{color:var(--g1);margin:10px 0 0 22px} li{margin-top:6px}
+  .callout{display:flex;gap:12px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--lime);border-radius:10px;padding:14px 16px;margin-top:16px;color:var(--g1)}
+  .callout.warn{border-left-color:var(--gold)} .callout .i{font-size:18px;line-height:1.4}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:16px}
+  .card{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:16px}
+  .card .t{font-family:var(--pixel);font-size:9px;color:var(--lime);margin-bottom:8px}
+  .card p{margin-top:4px;font-size:14.5px}
+  .steps{counter-reset:s;list-style:none;margin:16px 0 0}
+  .steps li{counter-increment:s;position:relative;padding:14px 16px 14px 58px;background:var(--panel);border:2px solid var(--line);border-radius:12px;margin-top:10px}
+  .steps li::before{content:counter(s);position:absolute;left:16px;top:14px;font-family:var(--pixel);font-size:11px;background:var(--lime);color:#000;border-radius:5px;width:28px;height:28px;display:grid;place-items:center}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+  .tbl{overflow-x:auto;border:2px solid var(--line);border-radius:12px;margin-top:14px} .tbl table{margin:0}
+  th{text-align:left;font-family:var(--pixel);font-size:8px;color:var(--g2);padding:11px 12px;background:var(--panel2)}
+  td{padding:10px 12px;border-top:1px solid var(--line);color:var(--g1);vertical-align:top} td b{color:var(--g0)}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;font-weight:600;border-radius:99px;padding:2px 8px;background:#1a1e24;border:1px solid #2b3036;margin:2px 4px 2px 0;white-space:nowrap;color:var(--g0)}
+  .gem{width:9px;height:9px;transform:rotate(45deg);border-radius:2px;display:inline-block}
+  .gear{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:16px}
+  .gi{border:2px solid var(--c);border-radius:10px;background:var(--panel);padding:10px;text-align:center}
+  .gi canvas{width:64px;height:64px;display:block;margin:0 auto 6px}
+  .gi b{display:block;font-size:12.5px;color:var(--g0);line-height:1.3} .gi small{font-family:var(--mono);font-size:9.5px;color:var(--c)}
+  .town{width:100%;border-radius:12px;border:2px solid var(--line);margin-top:16px;display:block}
+  .classes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:16px}
+  .cl{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .cl canvas{width:72px;height:72px} .cl b{display:block;font-family:var(--pixel);font-size:9px;color:var(--lime);margin-top:6px} .cl span{font-size:12.5px;color:var(--g2)}
+  details{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:10px}
+  summary{cursor:pointer;font-weight:600;color:var(--g0)} details p{margin-top:8px}
+  footer{border-top:1px solid var(--line);color:var(--g2);font-size:13px} footer .in{max-width:1180px;margin:0 auto;padding:24px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}nav.toc{display:none}.hero{grid-template-columns:1fr}.hero canvas{display:none}}
+  @media (max-width:520px){h2{font-size:24px}.logo small{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><a class="logo" href="/" style="text-decoration:none"><img src="/favicon.svg" alt="" style="width:24px;height:24px;vertical-align:-6px;margin-right:8px;image-rendering:pixelated">VIBERQUEST<small>GUIDE</small></a><a class="play" href="/">PLAY NOW</a></div></header>
+
+<div class="wrap">
+<nav class="toc" id="toc"><b>ON THIS PAGE</b>
+  <a href="#what">What is Viberquest</a><a href="#start">Get started</a><a href="#town">The town</a><a href="#hero">Your hero</a><a href="#quests">Quests</a>
+  <a href="#forge">Materials &amp; forge</a><a href="#chest">Daily chest</a><a href="#guild">Guild season</a><a href="#arena">Arena league</a><a href="#seasons">Seasons &amp; badges</a>
+  <a href="#fair">Fair play</a><a href="#token">$VQUEST &amp; Embers</a><a href="#faq">FAQ</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <div>
+      <h1>YOUR TRADES ARE<br>YOUR <em>QUESTS</em></h1>
+      <p>Viberquest is a pixel RPG built on top of <a href="https://testnet.vibevibe.fun" target="_blank" rel="noopener">vibe/vibe</a>. Your wallet is your character. When you trade on vibe/vibe, your quests complete themselves, checked straight from Robinhood Chain. No forms, no screenshots, no trust me bro.</p>
+      <div class="pills"><span class="pill">free to play</span><span class="pill">Robinhood Chain testnet</span><span class="pill">sign in, no transaction</span><span class="pill">weekly seasons</span></div>
+    </div>
+    <canvas id="herocv" width="64" height="64"></canvas>
+  </div>
+
+  <section id="what">
+    <h2><span class="n">01</span>What is Viberquest</h2>
+    <p>Most onchain games make you play a separate game. Here the game is the thing you already do: buying early, holding, launching, catching graduations. Viberquest reads what your wallet did on vibe/vibe and turns it into XP, loot and rankings.</p>
+    <div class="grid">
+      <div class="card"><div class="t">TRADE</div><p>Buy, sell, launch and hold on vibe/vibe like you normally would.</p></div>
+      <div class="card"><div class="t">QUEST</div><p>Daily, weekly and story quests fill up on their own as your trades land, usually within seconds.</p></div>
+      <div class="card"><div class="t">FORGE</div><p>Quests drop materials. Forge them into gear that shows on your hero and boosts your XP.</p></div>
+      <div class="card"><div class="t">COMPETE</div><p>Climb the weekly board, carry your vibe/vibe guild up the leagues, pick tokens in the Arena.</p></div>
+    </div>
+  </section>
+
+  <section id="start">
+    <h2><span class="n">02</span>Get started</h2>
+    <ol class="steps">
+      <li><b>Get a wallet</b> like MetaMask or Rabby with a little Robinhood Chain testnet ETH, the same setup you use on <a href="https://testnet.vibevibe.fun" target="_blank" rel="noopener">vibe/vibe</a>.</li>
+      <li><b>Open <a href="/">viberquest.fun</a></b> and press <b>Connect wallet to play</b>. You sign one message to prove the wallet is yours. It is not a transaction, it costs nothing and gives the game no access to your funds.</li>
+      <li><b>Read the quest board.</b> You get 3 daily quests, 5 weekly quests and the first story chapter.</li>
+      <li><b>Go trade on vibe/vibe.</b> Keep the game open in another tab and watch the board light up. Trades need to be worth at least 0.002 ETH to count.</li>
+      <li><b>Claim your rewards</b> for XP and materials, then head to the Forge.</li>
+    </ol>
+    <div class="callout"><span class="i">💡</span><span>Quests only count trades made <b>after</b> you got the quest. Your older history still matters though: it decides your class and your starting level.</span></div>
+  </section>
+
+  <section id="town">
+    <h2><span class="n">03</span>The town</h2>
+    <p>Everything happens on one pixel plaza, seen from above. Click anywhere to walk there, or use the <b>arrow keys / WASD</b> and press <b>E</b> at a door. On a phone, tap the plaza or the buttons under it. Day and night follow the real UTC time.</p>
+    <p>The town is <b>live</b>: everyone who's playing right now walks the same plaza with their own hero and gear. When someone trades on vibe/vibe a bubble pops over their head (<b>BUY $TOKEN 0.05</b>), and you can wave with emotes (GM, LFG, GG, 🔥, 🚀, 👋, keys 1 to 6). Click another player to see their hero card. This week's top players you don't see online walk around as faded ghosts.</p>
+    <div class="tbl"><table>
+      <tr><th>PLACE</th><th>WHAT YOU DO THERE</th></tr>
+      <tr><td><b>Quest Board</b></td><td>Your daily, weekly and story quests. Claim rewards and swap one daily per day.</td></tr>
+      <tr><td><b>Forge</b></td><td>Turn materials into gear, equip it, or melt spare gear back into materials.</td></tr>
+      <tr><td><b>Guild Hall</b></td><td>Your vibe/vibe guild's league, the weekly guild goal and its chests.</td></tr>
+      <tr><td><b>Daily Chest</b></td><td>A free chest on the street, once per UTC day.</td></tr>
+      <tr><td><b>Hall of Fame</b></td><td>This week's top questers and the archive of past seasons.</td></tr>
+      <tr><td><b>Arena</b></td><td>The fantasy launchpad league. Pick 5 tokens and score what they do.</td></tr>
+      <tr><td><b>Furnace</b></td><td>Burn $VQUEST, get Embers to spend in the game.</td></tr>
+      <tr><td><b>Tailor</b></td><td>Name colours and an extra emote pack, for Embers.</td></tr>
+      <tr><td><b>Sponsor board</b></td><td>Sponsored quests from vibe/vibe builders, and where builders book a slot.</td></tr>
+      <tr><td><b>Treasury</b></td><td>The token treasury, burns, buybacks and season payouts, read from the chain.</td></tr>
+    </table></div>
+  </section>
+
+  <section id="hero">
+    <h2><span class="n">04</span>Your hero</h2>
+    <p>Every wallet has its own pixel character, generated from the address, so nobody looks exactly like you. Your <b>class</b> comes from how you trade, your <b>level</b> from trading XP (your whole vibe/vibe history) plus quest XP (everything you claim here).</p>
+    <div class="classes" id="classes"></div>
+    <p>Your hero has a public page you can share on X with a big card of your character, level, gear and badges. Open the Hero window and press <b>Share on X</b>.</p>
+  </section>
+
+  <section id="quests">
+    <h2><span class="n">05</span>Quests</h2>
+    <p>Every quest is checked against real chain data by the quest engine, which re-reads your trades seconds after they land and sweeps everything again every minute. You can't fake progress and you can't lose it.</p>
+    <h3>Daily (3 a day, reset 00:00 UTC)</h3>
+    <div class="tbl"><table id="qdaily"><tr><th>QUEST</th><th>WHAT TO DO</th><th>REWARD</th></tr></table></div>
+    <p>Don't like one? Press <b>↻ SWAP</b> on it. One free swap per day.</p>
+    <h3>Weekly (5 a week, reset Monday 00:00 UTC)</h3>
+    <div class="tbl"><table id="qweekly"><tr><th>QUEST</th><th>WHAT TO DO</th><th>REWARD</th></tr></table></div>
+    <h3>Story (7 chapters, one at a time)</h3>
+    <div class="tbl"><table id="qstory"><tr><th>CHAPTER</th><th>WHAT TO DO</th><th>REWARD</th></tr></table></div>
+    <div class="callout warn"><span class="i">⚠️</span><span>Trades in tokens <b>you launched</b> never count, and a buy you sell again within 10 minutes doesn't count towards volume quests. Quick Flip is the one exception, and it has to be a profitable flip.</span></div>
+  </section>
+
+  <section id="forge">
+    <h2><span class="n">06</span>Materials &amp; forge</h2>
+    <p>Quests and chests drop four materials: <span class="chip"><i class="gem" style="background:var(--copper)"></i>copper</span><span class="chip"><i class="gem" style="background:var(--silver)"></i>silver</span><span class="chip"><i class="gem" style="background:var(--gold)"></i>gold</span><span class="chip"><i class="gem" style="background:var(--diamond)"></i>diamond</span>. At the Forge you pick a tier and a slot, swing the hammer, and get a random piece of gear of that tier.</p>
+    <div class="tbl"><table>
+      <tr><th>TIER</th><th>COST</th><th>SUCCESS</th><th>POWER</th></tr>
+      <tr><td><b style="color:var(--common)">Common</b></td><td>5 copper</td><td>100%</td><td>+1 to +2</td></tr>
+      <tr><td><b style="color:var(--rare)">Rare</b></td><td>5 copper + 3 silver</td><td>90%</td><td>+3 to +4</td></tr>
+      <tr><td><b style="color:var(--epic)">Epic</b></td><td>3 silver + 2 gold</td><td>75%</td><td>+5 to +7</td></tr>
+      <tr><td><b style="color:var(--legendary)">Legendary</b></td><td>2 gold + 1 diamond</td><td>60%</td><td>+8 to +10</td></tr>
+    </table></div>
+    <p>If the forge fails you get half of the materials back. Each point of power on <b>equipped</b> gear adds <b>+1% XP</b> to every quest reward, up to <b>+50%</b>. There are five slots: head, eyes, body, aura and pet (auras and pets start at rare).</p>
+    <p><b>Salvage:</b> spare gear you don't wear can be melted back: common → 2 copper, rare → 2 silver, epic → 1 gold + 1 silver, legendary → 1 diamond.</p>
+    <div class="gear" id="gear"></div>
+  </section>
+
+  <section id="chest">
+    <h2><span class="n">07</span>Daily chest</h2>
+    <p>A chest waits on the street every UTC day: 2 to 4 copper for sure, a 25% chance of silver and a 5% chance of gold, plus 10 XP. It opens for wallets that traded on vibe/vibe in the last 7 days, so empty wallets can't farm it.</p>
+  </section>
+
+  <section id="guild">
+    <h2><span class="n">08</span>Guild season</h2>
+    <p>Viberquest uses the <b>real vibe/vibe guilds</b>. Join one on vibe/vibe and turn on <b>"show me in the member list"</b> so the game can see you. There's nothing to set up in the game.</p>
+    <ul>
+      <li><b>Guild points</b> = the quest XP the guild's players claim this week. One member adds at most <b>1,000</b> a week, so a single whale can't carry a guild.</li>
+      <li><b>Leagues:</b> <span class="chip" style="color:var(--copper)">Bronze</span><span class="chip" style="color:var(--silver)">Silver</span><span class="chip" style="color:var(--gold)">Gold</span><span class="chip" style="color:var(--diamond)">Diamond</span>. Every Monday the top 20% of each league move up and the bottom 20% (and guilds that didn't score) move down.</li>
+      <li><b>Guild goal:</b> the combined weekly volume of all visible members unlocks up to three chests for every Viberquest player in the guild.</li>
+    </ul>
+    <div class="tbl"><table>
+      <tr><th>GUILD VOLUME THIS WEEK</th><th>CHEST FOR EACH PLAYER</th></tr>
+      <tr><td><b>100 ETH</b></td><td>3 copper + 1 silver</td></tr>
+      <tr><td><b>500 ETH</b></td><td>2 silver + 1 gold</td></tr>
+      <tr><td><b>2,000 ETH</b></td><td>2 gold</td></tr>
+    </table></div>
+  </section>
+
+  <section id="arena">
+    <h2><span class="n">09</span>Arena: fantasy launchpad league</h2>
+    <p>Free to enter. Pick <b>5 vibe/vibe tokens</b> for the week and one <b>captain</b>. Every pick only scores what happens <b>after you picked it</b>, so picking early matters.</p>
+    <div class="tbl"><table>
+      <tr><th>WHAT HAPPENS</th><th>POINTS</th></tr>
+      <tr><td>The token graduates</td><td><b style="color:var(--up)">+100</b></td></tr>
+      <tr><td>Each new buyer</td><td><b style="color:var(--up)">+1</b> (max 300)</td></tr>
+      <tr><td>Each ETH of volume</td><td><b style="color:var(--up)">+5</b> (max 500)</td></tr>
+      <tr><td>Each wallet that turns net seller</td><td><b style="color:var(--dn)">−1</b> (max −300)</td></tr>
+      <tr><td>The creator dumps their bag</td><td><b style="color:var(--dn)">−200</b></td></tr>
+      <tr><td>Captain</td><td><b>×1.5</b></td></tr>
+    </table></div>
+    <ul>
+      <li>At most <b>3 tokens that haven't graduated yet</b>. You can't pick your own launches.</li>
+      <li>Drops and captain changes are open until <b>Tuesday 00:00 UTC</b>. After that the roster is locked, but empty slots can still be filled all week.</li>
+      <li>Scores refresh every 2 minutes. Your total shows on the Arena's scoreboard in town.</li>
+    </ul>
+  </section>
+
+  <section id="seasons">
+    <h2><span class="n">10</span>Seasons &amp; badges</h2>
+    <p>A season is one week, Monday 00:00 to Monday 00:00 UTC. When it ends the boards are archived in the Hall of Fame under <b>Past seasons</b>, and badges are handed out:</p>
+    <ul>
+      <li><b>FAME #1, #2, #3</b>: the top 3 questers of the week.</li>
+      <li><b>ARENA #1, #2, #3</b>: the top 3 of the fantasy league.</li>
+      <li><b>GUILD CHAMP</b>: every player of the #1 guild who earned quest XP that week.</li>
+    </ul>
+    <p>Badges stay forever on your Hero window and your share card.</p>
+  </section>
+
+  <section id="fair">
+    <h2><span class="n">11</span>Fair play</h2>
+    <ul>
+      <li>Everything is checked from chain data. There's nothing to self-report.</li>
+      <li>Trades under 0.002 ETH don't count. Your own launches don't count for buy or volume quests.</li>
+      <li>Quick in-and-out trades within 10 minutes are filtered out of volume quests.</li>
+      <li>Free chests need recent trading activity. Guild points are capped per member.</li>
+      <li>Materials and gear can't be transferred.</li>
+    </ul>
+  </section>
+
+  <section id="token">
+    <h2><span class="n">12</span>$VQUEST &amp; Embers</h2>
+    <p>$VQUEST is the game's currency, launched on vibe/vibe. The economy follows three rules: <b>the game never mints tokens</b>, <b>the game never holds anyone's tokens</b>, and <b>everything is checked on chain</b>.</p>
+    <h3>The Furnace: burn VQUEST, get Embers</h3>
+    <p>At the Furnace you burn VQUEST from your own wallet (a normal transfer to the 0x…dEaD address that you sign yourself). The indexer sees the burn and credits the same amount of <b>Embers</b>, usually within seconds. Burned tokens are gone for good. Embers can't be transferred.</p>
+    <div class="tbl"><table>
+      <tr><th>EMBERS BUY</th><th>PRICE</th></tr>
+      <tr><td>Mythic forge (plus 2 diamonds, 50% success)</td><td>1,000</td></tr>
+      <tr><td>Legendary / epic forge, extra on every try</td><td>300 / 100</td></tr>
+      <tr><td>Hard-mode quests for the week (2-3x XP, rare materials)</td><td>200</td></tr>
+      <tr><td>Another daily swap</td><td>50</td></tr>
+      <tr><td>6th Arena pick for the week</td><td>150</td></tr>
+      <tr><td>Name colour / emote pack (Tailor)</td><td>300 / 200</td></tr>
+      <tr><td>Guild base, pooled by members: level 1 / 2 / 3 (+2% / +4% / +6% XP for everyone)</td><td>5,000 / 20,000 / 60,000</td></tr>
+      <tr><td>24h sponsored quest (builders)</td><td>50,000</td></tr>
+    </table></div>
+    <p class="dim">Prices can be tuned once the token is live and real numbers come in.</p>
+    <h3>Season rewards: only from real fees</h3>
+    <p>The creator share of $VQUEST trading fees goes to the treasury wallet. Each week at most 30% of it buys VQUEST back on the market, and that's the season's reward pool: <b>45% guilds</b> (top 3, split by members' quest XP), <b>35% Arena</b> (top 10), <b>20% questers</b> (top 10 plus a 5-winner raffle anyone can recompute). To qualify you need 5+ quests that week, and no wallet gets more than 10% of a pool. Player burns are never paid out to anyone.</p>
+    <h3>Sponsored quests</h3>
+    <p>Builders on vibe/vibe can book a 24h quest for a token they launched: every player gets "buy it and hold it for 6 to 48 hours", for XP and materials. Only buy-and-hold quests, two at a time, and the builder gets the list of wallets that completed it.</p>
+    <div class="callout warn"><span class="i">⚠️</span><span>This is a testnet alpha. Nothing in Viberquest has monetary value, there's no airdrop or allocation promised, and $VQUEST is a game currency, not an investment. Sponsored quests are not advice to buy anything.</span></div>
+  </section>
+
+  <section id="faq">
+    <h2><span class="n">13</span>FAQ</h2>
+    <details><summary>Is signing in safe?</summary><p>You sign a plain text message with a one-time code. It's not a transaction and not an approval, so it can't move anything from your wallet.</p></details>
+    <details><summary>My trade doesn't show up in a quest.</summary><p>Check that it was made after you got the quest, it was worth at least 0.002 ETH and it wasn't in your own token. Trades usually land within seconds, give it a minute if the chain is busy.</p></details>
+    <details><summary>Why can't the game see my guild?</summary><p>Turn on "show me in the member list" in your vibe/vibe guild settings. The member list refreshes every 20 minutes.</p></details>
+    <details><summary>Do I need to keep the game open?</summary><p>No. Progress is computed on the server from the chain. Come back whenever and claim.</p></details>
+    <details><summary>Is this made by vibe/vibe?</summary><p>No. Viberquest is an unofficial community game built on vibe/vibe's public data by <a href="https://x.com/0xHaileyy" target="_blank" rel="noopener">@0xHaileyy</a>.</p></details>
+  </section>
+
+  <section style="text-align:center;padding:30px 0">
+    <a class="play" href="/" style="font-size:13px;padding:16px 22px">START PLAYING</a>
+  </section>
+</main>
+</div>
+<footer><div class="in"><span>Viberquest is an unofficial community game, not affiliated with vibe/vibe. Testnet alpha: nothing here has monetary value.</span><span>by <a href="https://x.com/0xHaileyy" target="_blank" rel="noopener">@0xHaileyy</a></span></div></footer>
+
+<script src="/viber.js?v=2"></script>
+<script src="/items.js?v=2"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const gem = m => `<i class="gem" style="background:var(--${m})"></i>`;
+const reward = r => `<span class="chip">+${r.xp} XP</span>` + Object.entries(r.mat || {}).map(([m, n]) => `<span class="chip">${gem(m)}${n} ${m}</span>`).join("");
+const QUESTS = {
+  qdaily: [["First move", "Buy any vibe/vibe token.", { xp: 50, mat: { copper: 2 } }], ["Spread out", "Buy 3 different tokens today.", { xp: 100, mat: { copper: 3 } }], ["Pool walker", "Buy a graduated token in its pool.", { xp: 80, mat: { copper: 2 } }],
+    ["Fresh off the line", "Buy a token launched less than an hour before you bought it.", { xp: 100, mat: { copper: 2 } }], ["Ecosystem friend", "Buy a token paired with VIBEVIBE.", { xp: 100, mat: { silver: 1 } }],
+    ["Stock hunter", "Buy a token paired with a test stock.", { xp: 120, mat: { silver: 1 } }], ["Steady hands", "Buy a token and hold it 6 hours without selling.", { xp: 100, mat: { copper: 2 } }],
+    ["Early bird", "Be one of the first 10 buyers of a token.", { xp: 120, mat: { silver: 1 } }], ["Quick flip", "Buy and sell within 10 minutes for more ETH than you paid.", { xp: 150, mat: { silver: 1 } }]],
+  qweekly: [["Big week", "Trade 1 ETH of volume this week.", { xp: 300, mat: { gold: 1 } }], ["Show up", "Trade on 5 different days this week.", { xp: 250, mat: { silver: 2 } }],
+    ["Graduation ride", "Buy a token before it graduates, and see it graduate.", { xp: 250, mat: { gold: 1 } }], ["Founder", "Launch a token on vibe/vibe.", { xp: 200, mat: { gold: 1 } }],
+    ["Founder plus", "A token you launched this week reaches 20 different buyers.", { xp: 400, mat: { diamond: 1 } }], ["Sniper week", "Be one of the first 10 buyers on 3 different tokens.", { xp: 300, mat: { gold: 1 } }]],
+  qstory: [["1 · Welcome to Viberquest", "Make your first trade after signing in.", { xp: 100, mat: { copper: 5 } }], ["2 · Explorer", "Buy 3 different tokens on vibe/vibe.", { xp: 150, mat: { copper: 5, silver: 1 } }],
+    ["3 · Find your people", "Join a vibe/vibe guild and turn on \"show me in the member list\".", { xp: 150, mat: { silver: 2 } }], ["4 · After graduation", "Buy a graduated token in its pool.", { xp: 150, mat: { silver: 2 } }],
+    ["5 · First in line", "Be one of the first 10 buyers of a token.", { xp: 200, mat: { gold: 1 } }], ["6 · Ride it home", "Buy a token before it graduates and see it graduate.", { xp: 300, mat: { gold: 1, silver: 2 } }],
+    ["7 · Your own token", "Launch a token on vibe/vibe.", { xp: 300, mat: { diamond: 1 } }]],
+};
+for (const [id, rows] of Object.entries(QUESTS)) $(id).insertAdjacentHTML("beforeend", rows.map(([t, d, r]) => `<tr><td><b>${esc(t)}</b></td><td>${esc(d)}</td><td>${reward(r)}</td></tr>`).join(""));
+
+// pixel art straight from the game's own sprite code
+function bust(cv, wallet, cls, level, gear, t) {
+  const g = cv.getContext("2d"), S = cv.width / 40; g.clearRect(0, 0, cv.width, cv.height);
+  Viber.draw(g, wallet, cls, level, 4 * S, 4 * S, S); if (gear) Items.drawGear(g, gear, 4 * S, 4 * S, S, t || 0);
+}
+const hc = $("herocv"); hc.width = hc.height = 80;
+(function loop(t) { bust(hc, "0x19298c37fdcbeb0a7619e9d1cf6058d932ee74fc", "Whale", 59, { head: "crown", eyes: "laser", body: "goldarmor" }, t); requestAnimationFrame(loop); })(0);
+const CLASSES = [["Sniper", "first in, every time", "0x8a1"], ["Launcher", "ships tokens for breakfast", "0x3b2"], ["Diamond Hands", "buys the curve, never lets go", "0x77c"], ["Flipper", "in and out before the candle closes", "0x1f0"],
+  ["Whale", "moves the curve when it moves", "0xe45"], ["Curve Surfer", "rides them all the way to graduation", "0x9d3"], ["Fresh", "just booted up. the curve is waiting", "0x046"]];
+$("classes").innerHTML = CLASSES.map(([c, l], i) => `<div class="cl"><canvas width="80" height="80" data-c="${esc(c)}" data-i="${i}"></canvas><b>${esc(c.toUpperCase())}</b><span>${esc(l)}</span></div>`).join("");
+document.querySelectorAll("#classes canvas").forEach(c => bust(c, CLASSES[c.dataset.i][2] + "0".repeat(39), c.dataset.c, 10 + c.dataset.i * 8));
+$("gear").innerHTML = Items.TEMPLATES.map(t => `<div class="gi" style="--c:var(--${t.rarity})"><canvas width="80" height="80" data-t="${t.id}"></canvas><b>${esc(t.name)}</b><small>${t.rarity.toUpperCase()} ${t.slot.toUpperCase()}</small></div>`).join("");
+document.querySelectorAll("#gear canvas").forEach(c => {
+  const t = Items.TEMPLATES.find(x => x.id === c.dataset.t), g = c.getContext("2d");
+  if (t.slot === "pet") return Items.drawPet(g, t.id, 20, 20, 4);
+  bust(c, "0x0000000000000000000000000000000000000000", "Fresh", 1, { [t.slot]: t.id });
+  if (t.aura) { const col = t.aura === "rainbow" ? "#ff7ad9" : t.aura, gr = g.createRadialGradient(40, 40, 4, 40, 40, 40); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,0)"); g.globalCompositeOperation = "destination-over"; g.globalAlpha = .5; g.fillStyle = gr; g.fillRect(0, 0, 80, 80); g.globalAlpha = 1; g.globalCompositeOperation = "source-over"; }
+});
+// table of contents follows the scroll
+const links = [...document.querySelectorAll("#toc a")], secs = links.map(a => document.querySelector(a.getAttribute("href")));
+addEventListener("scroll", () => { let k = 0; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < 240) k = i; }); links.forEach((a, i) => a.classList.toggle("on", i === k)); }, { passive: true });
+</script>
+</body>
+</html>

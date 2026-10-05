@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Viberquest · your trades are your quests</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="A pixel RPG on top of vibe/vibe. Your wallet is your character, quests are verified straight from Robinhood Chain.">
+<meta property="og:title" content="Viberquest"><meta property="og:description" content="Your wallet is your character. Your trades are your quests."><meta property="og:image" content="https://viberquest.fun/brand/viberquest-banner.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://viberquest.fun/brand/viberquest-banner.png">
+<meta name="theme-color" content="#000000"><link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:"Clash Display";src:url(/fonts/ClashDisplay-Semibold.woff2) format("woff2");font-weight:600;font-display:swap}
+  :root{--lime:#dff902;--iris:#6a63c8;--bg:#000;--panel:#101214;--panel2:#16191c;--line:#24282c;--g1:#b7bdc0;--g2:#7d848a;--g0:#f2f4f3;--up:#5bd08a;--dn:#ff8a7a;
+    --copper:#d9844a;--silver:#c9d2d8;--gold:#ffd23f;--diamond:#8fe9ff;--common:#b7bdc0;--rare:#5b9dff;--epic:#b26bff;--legendary:#ffd23f;
+    --display:"Clash Display",system-ui,sans-serif;--ui:"Instrument Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;--pixel:"Press Start 2P",monospace;--r:12px;--rc:9px}
+  *{box-sizing:border-box;margin:0;padding:0} [hidden]{display:none!important}
+  html,body{background:#05060a;color:var(--g0);font-family:var(--ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none} button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  img.px,canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--rc);font-weight:600;font-size:14px;white-space:nowrap;transition:transform .12s,background .12s,border-color .12s}
+  .btn:active{transform:scale(.96)} .btn[disabled]{opacity:.45;pointer-events:none}
+  .btn.ghost{border:1px solid var(--line);color:var(--g1);background:rgba(0,0,0,.4)} .btn.ghost:hover{border-color:#3a3f45;color:var(--g0)}
+  .btn.lime{background:var(--lime);color:#000;box-shadow:0 4px 0 #8fa000} .btn.lime:hover{background:#ecff4d} .btn.lime:active{box-shadow:0 1px 0 #8fa000;transform:translateY(3px)}
+  .btn.dark{background:var(--panel2);border:1px solid var(--line)}
+  .mono{font-family:var(--mono)} .dim{color:var(--g2)} .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--g1);text-transform:uppercase}
+  /* hud */
+  .hud{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(5,6,10,.96),rgba(5,6,10,.82));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .hud .in{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px}
+  .logo{font-family:var(--pixel);font-size:14px;color:var(--lime);text-shadow:2px 2px 0 #3d4a00;white-space:nowrap}
+  .logo .lg{width:26px;height:26px;vertical-align:-7px;margin-right:9px;image-rendering:pixelated}
+  .logo small{font-family:var(--mono);font-size:9px;color:var(--g2);border:1px solid var(--line);border-radius:99px;padding:2px 7px;margin-left:8px;text-shadow:none;vertical-align:3px}
+  .lvlbox{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+  .lvlbadge{font-family:var(--pixel);font-size:12px;background:var(--lime);color:#000;padding:7px 9px;border-radius:6px;box-shadow:0 3px 0 #8fa000;white-space:nowrap}
+  .xpwrap{flex:1;min-width:80px;max-width:320px}
+  .xpbar{height:10px;border-radius:3px;background:#1b1e21;border:1px solid #2b3036;overflow:hidden} .xpbar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--lime) 0 6px,#c8e000 6px 8px);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .xpt{font-family:var(--mono);font-size:10px;color:var(--g2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mats{display:flex;gap:6px}
+  .mat{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 8px}
+  .gem{width:10px;height:10px;transform:rotate(45deg);border-radius:2px;display:inline-block;box-shadow:inset -2px -2px 0 rgba(0,0,0,.25)}
+  .hudr{display:flex;gap:6px;align-items:center}
+  .iconbtn{width:38px;height:38px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--g1);background:rgba(0,0,0,.4)} .iconbtn:hover{color:var(--g0);border-color:#3a3f45}
+  /* stage */
+  .stage{max-width:1280px;margin:14px auto 0;padding:0 16px;position:relative}
+  .world{position:relative;border-radius:14px;overflow:hidden;border:2px solid #1f2329;box-shadow:0 20px 60px rgba(0,0,0,.6);background:#0b0d14}
+  #town{display:block;width:100%;height:auto;cursor:default}
+  .tip{position:absolute;pointer-events:none;font-family:var(--pixel);font-size:10px;background:rgba(0,0,0,.82);border:2px solid var(--lime);color:var(--lime);padding:6px 8px;border-radius:4px;transform:translate(-50%,-130%);white-space:nowrap;display:none}
+  .quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .quick button{flex:1;min-width:110px;height:44px;border-radius:9px;background:var(--panel);border:1px solid var(--line);font-family:var(--pixel);font-size:9px;color:var(--g1);display:flex;align-items:center;justify-content:center;gap:8px}
+  .quick button:hover{border-color:var(--lime);color:var(--lime)} .quick button b{width:8px;height:8px;border-radius:50%;background:var(--dn);box-shadow:0 0 8px var(--dn)}
+  .note{font-family:var(--mono);font-size:12px;color:var(--g2);margin-top:10px}
+  /* signed-out overlay */
+  .welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,.8));padding:20px}
+  .welcome h1{font-family:var(--pixel);font-size:clamp(20px,4.4vw,48px);line-height:1.25;color:var(--g0);text-shadow:4px 4px 0 #000}
+  .welcome h1 em{font-style:normal;color:var(--lime)}
+  .welcome p{max-width:600px;color:var(--g1);margin:18px 0 22px;font-size:clamp(14px,1.7vw,18px)}
+  .welcome .btn{height:52px;padding:0 26px;font-size:16px}
+  .msg{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--g1);min-height:18px} .msg.err{color:var(--dn)}
+  /* windows */
+  .veil{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;padding:84px 14px 20px;overflow:auto}
+  .veil.on{display:flex}
+  .win{width:min(980px,100%);background:#0d0f13;border:3px solid #2a2f36;border-radius:12px;box-shadow:0 0 0 3px #000,0 30px 80px rgba(0,0,0,.7);animation:pop .22s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+  .win-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:3px solid #2a2f36;background:linear-gradient(180deg,#161a20,#101318);border-radius:9px 9px 0 0}
+  .win-h h2{font-family:var(--pixel);font-size:14px;color:var(--lime);letter-spacing:.04em}
+  .win-h h2 small{font-family:var(--mono);font-size:11px;color:var(--g2);margin-left:10px;letter-spacing:0}
+  .win-b{padding:18px}
+  .x{font-family:var(--pixel);font-size:12px;color:var(--g1);border:2px solid #2a2f36;border-radius:6px;width:34px;height:34px} .x:hover{color:var(--dn);border-color:var(--dn)}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{font-family:var(--pixel);font-size:9px;padding:9px 11px;border:2px solid #2a2f36;border-radius:6px;color:var(--g1)} .tabs button.on{border-color:var(--lime);color:#000;background:var(--lime)}
+  /* quests */
+  .quests{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+  .q{background:#12151a;border:2px solid #23282f;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+  .q::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:#3a3f45}
+  .q.done{border-color:rgba(223,249,2,.6)} .q.done::before{background:var(--lime);box-shadow:0 0 12px var(--lime)}
+  .q.claimed{opacity:.5}
+  .q .kind{font-family:var(--pixel);font-size:8px;color:var(--g2)}
+  .q h3{font-family:var(--display);font-weight:600;font-size:18px;text-transform:uppercase;line-height:1.1}
+  .q p{color:var(--g1);font-size:13.5px;flex:1}
+  .prog{font-family:var(--mono);font-size:11px;color:var(--g1);display:flex;justify-content:space-between;margin-bottom:4px}
+  .pbar{height:9px;border-radius:3px;background:#1b1e21;border:1px solid #2b3036;overflow:hidden} .pbar i{display:block;height:100%;background:var(--lime);transition:width .8s}
+  .rw{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;border-radius:99px;padding:3px 9px;background:#1a1e24;border:1px solid #2b3036}
+  .q .btn{height:36px;font-size:13px}
+  .flash{animation:flash 1.4s ease-out} @keyframes flash{from{box-shadow:0 0 0 3px var(--lime),0 0 30px rgba(223,249,2,.5)}to{box-shadow:none}}
+  /* forge */
+  .forge{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+  .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .tier{border:2px solid #2a2f36;border-radius:9px;padding:10px 8px;text-align:center;background:#12151a}
+  .tier.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c) inset,0 0 18px color-mix(in srgb,var(--c) 35%,transparent)}
+  .tier b{font-family:var(--pixel);font-size:8px;color:var(--c);display:block;margin-bottom:6px}
+  .tier span{font-family:var(--mono);font-size:10px;color:var(--g1);display:block}
+  .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  .slotb{border:2px solid #2a2f36;border-radius:9px;padding:10px 4px;font-family:var(--pixel);font-size:8px;color:var(--g1);background:#12151a} .slotb.on{border-color:var(--lime);color:var(--lime)} .slotb[disabled]{opacity:.3}
+  .cost{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#12151a;border:2px solid #2a2f36;border-radius:9px;padding:12px}
+  .anvil{background:radial-gradient(ellipse at 50% 70%,rgba(255,122,26,.18),transparent 60%),#0a0b0e;border:2px solid #2a2f36;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;min-height:300px;position:relative}
+  .anvil canvas{width:220px;height:220px}
+  .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:16px}
+  .it{border:2px solid var(--c);border-radius:9px;padding:10px;background:#12151a;display:flex;flex-direction:column;gap:6px}
+  .it.eq{box-shadow:0 0 0 2px var(--lime) inset}
+  .it b{font-size:13px} .it small{font-family:var(--mono);font-size:10px;color:var(--c)} .it .btn{height:30px;font-size:12px}
+  .it canvas{width:48px;height:48px;align-self:center}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-family:var(--pixel);font-size:8px;color:var(--g2);padding:8px 10px}
+  td{padding:9px 10px;border-top:2px solid #1a1e24;font-family:var(--mono)}
+  tr.me td{background:rgba(223,249,2,.08)}
+  .who{display:flex;align-items:center;gap:10px} .who canvas{width:34px;height:34px;background:#0a0b0c;border-radius:6px}
+  .empty{padding:20px;color:var(--g1);text-align:center}
+  /* fx */
+  .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;background:var(--lime);color:#000;font-weight:700;border-radius:8px;padding:11px 18px;transition:.25s;z-index:60;max-width:92vw;text-align:center;box-shadow:0 4px 0 #8fa000}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .banner{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;pointer-events:none}
+  .banner.on{display:flex}
+  .banner h3{font-family:var(--pixel);font-size:clamp(26px,6vw,64px);color:var(--lime);text-shadow:4px 4px 0 #000,0 0 30px rgba(223,249,2,.6);animation:boom 1.6s ease-out both}
+  .banner p{font-family:var(--pixel);font-size:14px;color:var(--g0);margin-top:14px;text-shadow:2px 2px 0 #000;animation:boom 1.6s .1s ease-out both}
+  @keyframes boom{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.15);opacity:1}40%{transform:scale(1)}85%{opacity:1}100%{opacity:0}}
+  #fx{position:fixed;inset:0;z-index:65;pointer-events:none;width:100%;height:100%}
+  .reveal{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .reveal canvas{width:200px;height:200px}
+  .reveal h4{font-family:var(--pixel);font-size:14px} .reveal p{color:var(--g1);font-size:14px}
+  /* arena */
+  .roster{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+  .pick{background:#12151a;border:2px solid #2a2f36;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;min-height:170px;position:relative}
+  .pick.cap{border-color:var(--gold);box-shadow:0 0 18px rgba(255,210,63,.18)}
+  .pick.emptyp{border-style:dashed;align-items:center;justify-content:center;color:var(--g2);font-family:var(--pixel);font-size:8px;text-align:center;line-height:1.8}
+  .pick h4{font-family:var(--display);font-size:20px;font-weight:600;line-height:1;word-break:break-all}
+  .pick .nm{font-size:12px;color:var(--g2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick .pts{font-family:var(--pixel);font-size:14px;color:var(--lime);margin-top:auto}
+  .pick .parts{font-family:var(--mono);font-size:10.5px;color:var(--g1);line-height:1.6}
+  .pick .row{display:flex;gap:6px} .pick .row .btn{height:28px;font-size:11px;padding:0 8px;flex:1}
+  .capb{position:absolute;top:-9px;right:8px;font-family:var(--pixel);font-size:7px;background:var(--gold);color:#000;padding:4px 6px;border-radius:4px}
+  .srch{width:100%;height:44px;border-radius:9px;border:2px solid #2a2f36;background:#0a0b0e;color:var(--g0);font:inherit;font-size:15px;padding:0 14px;outline:none} .srch:focus{border-color:var(--lime)}
+  .tres{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px;max-height:300px;overflow:auto}
+  .tok{display:flex;align-items:center;gap:10px;background:#12151a;border:2px solid #23282f;border-radius:9px;padding:9px 10px}
+  .tok div{flex:1;min-width:0} .tok b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .tok small{font-family:var(--mono);font-size:10px;color:var(--g2)}
+  .tok .btn{height:30px;font-size:11px;padding:0 10px}
+  .badge{font-family:var(--pixel);font-size:6px;padding:3px 5px;border-radius:3px;background:#1d3a2a;color:var(--up);vertical-align:2px;margin-left:4px}
+  .chap{display:flex;gap:4px;margin-bottom:14px} .chap i{flex:1;height:8px;border-radius:2px;background:#1b1e21;border:1px solid #2b3036} .chap i.on{background:var(--lime);border-color:var(--lime)} .chap i.cur{background:repeating-linear-gradient(90deg,var(--lime) 0 3px,transparent 3px 6px)}
+  .rr{position:absolute;top:10px;right:10px;font-family:var(--pixel);font-size:8px;color:var(--g1);border:2px solid #2a2f36;border-radius:6px;padding:5px 7px;background:#0d0f13} .rr:hover{color:var(--lime);border-color:var(--lime)}
+  .share{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .cardimg{width:100%;border-radius:10px;border:2px solid #2a2f36;margin-top:14px;display:block;image-rendering:pixelated}
+  .tier-b{font-family:var(--pixel);font-size:7px;padding:4px 6px;border-radius:4px;margin-left:6px;vertical-align:2px;color:#000}
+  .t0{background:#c47a36}.t1{background:#c9d2d8}.t2{background:#ffd23f}.t3{background:#8fe9ff}
+  .goal{background:#12151a;border:2px solid #2a2f36;border-radius:10px;padding:14px;margin-top:12px}
+  .gbar{position:relative;height:14px;border-radius:4px;background:#1b1e21;border:1px solid #2b3036;margin:26px 0 8px}
+  .gbar>i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--lime) 0 6px,#c8e000 6px 8px);border-radius:3px;transition:width .9s}
+  .gm{position:absolute;top:-22px;transform:translateX(-100%);font-family:var(--pixel);font-size:7px;color:var(--g2);white-space:nowrap} .gm.on{color:var(--lime)}
+  .gm::after{content:"";position:absolute;right:0;top:16px;width:2px;height:20px;background:currentColor}
+  .gchests{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .gchest{border:2px solid #2a2f36;border-radius:9px;padding:10px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .gchest.on{border-color:var(--gold)} .gchest b{font-family:var(--pixel);font-size:8px} .gchest .btn{height:30px;font-size:11px;width:100%}
+  .boards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .board{background:#12151a;border:2px solid #23282f;border-radius:10px;padding:12px} .board h4{font-family:var(--pixel);font-size:9px;color:var(--lime);margin-bottom:8px}
+  .board table td{padding:6px 6px;font-size:12px}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .bdg{font-family:var(--pixel);font-size:7px;background:var(--gold);color:#000;padding:5px 7px;border-radius:4px}
+  @media (max-width:860px){.boards{grid-template-columns:1fr}}
+  .online{position:absolute;left:10px;top:10px;font-family:var(--pixel);font-size:8px;color:var(--g0);background:rgba(0,0,0,.6);border:1px solid #2a2f36;border-radius:6px;padding:6px 8px;pointer-events:none}
+  .online i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);margin-right:6px;vertical-align:0}
+  .emotes{position:absolute;right:8px;top:8px;display:flex;gap:4px}
+  .emotes button{font-family:var(--pixel);font-size:8px;color:var(--g0);background:rgba(0,0,0,.6);border:1px solid #2a2f36;border-radius:6px;height:28px;min-width:30px;padding:0 6px}
+  .emotes button:hover{border-color:var(--lime);color:var(--lime)} .emotes button:active{transform:scale(.92)}
+  @media (max-width:560px){.emotes button{height:24px;min-width:24px;padding:0 4px;font-size:7px}.online{font-size:7px}}
+  .tiers{grid-template-columns:repeat(5,1fr)!important}
+  .ember{display:inline-block;width:9px;height:11px;background:linear-gradient(#ffd23f,#ff7a1a 55%,#ff4b6e);clip-path:polygon(50% 0,100% 60%,80% 100%,20% 100%,0 60%);vertical-align:-1px}
+  .econ{background:#12151a;border:2px solid #2a2f36;border-radius:10px;padding:14px;margin-top:12px}
+  .econ h4{font-family:var(--pixel);font-size:9px;color:var(--lime);margin-bottom:10px}
+  .big{font-family:var(--pixel);font-size:20px;color:var(--g0)} .big small{font-size:9px;color:var(--g2);margin-left:6px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media (max-width:760px){.row2{grid-template-columns:1fr}}
+  .amt{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0} .amt button{font-family:var(--mono);font-size:12px;border:1px solid #2a2f36;border-radius:7px;padding:6px 10px;color:var(--g1)} .amt button.on{border-color:var(--lime);color:var(--lime)}
+  .srch.sm{height:38px;font-size:14px}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px} .sw{width:38px;height:38px;border-radius:8px;border:3px solid #0d0f13;box-shadow:0 0 0 2px #2a2f36} .sw.on{box-shadow:0 0 0 2px var(--lime)}
+  .price{font-family:var(--mono);font-size:12px;color:var(--g1)} .price b{color:#ff9a3c}
+  .list{max-height:220px;overflow:auto;margin-top:8px} .list div{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12px;padding:6px 0;border-top:1px solid #1d2127;color:var(--g1)}
+  .lock{opacity:.55}
+  .labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .lbl{position:absolute;left:0;top:0;font:600 12px/1.2 var(--ui);letter-spacing:.01em;color:#f2f4f3;background:rgba(5,6,10,.62);border:1px solid rgba(255,255,255,.08);padding:2px 7px 3px;border-radius:6px;white-space:nowrap;will-change:transform}
+  .lbl small{font:500 10px var(--mono);color:#b7bdc0;margin-right:5px}
+  .lbl.me{border-color:rgba(223,249,2,.45)} .lbl.ghost{opacity:.6}
+  @media (max-width:560px){.lbl{font-size:10px;padding:1px 5px 2px}.lbl small{font-size:9px}}
+  /* tutorial */
+  .tut{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+  .tutc{width:min(520px,100%);background:#0d0f13;border:3px solid var(--lime);border-radius:12px;box-shadow:0 0 0 3px #000,0 0 60px rgba(223,249,2,.2);padding:26px 24px 20px;text-align:center;animation:pop .25s cubic-bezier(.2,1.4,.4,1)}
+  .tutc .ic{font-size:44px;line-height:1;margin-bottom:12px}
+  .tutc h3{font-family:var(--pixel);font-size:15px;color:var(--lime);line-height:1.5}
+  .tutc p{color:var(--g1);font-size:15px;margin:12px 0 20px;line-height:1.55}
+  .tutc .dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px} .tutc .dots i{width:8px;height:8px;border-radius:2px;background:#2a2f36} .tutc .dots i.on{background:var(--lime)}
+  .tutc .row{display:flex;gap:8px;justify-content:center}
+  footer{max-width:1280px;margin:0 auto;padding:30px 16px 40px;color:var(--g2);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap} footer a{color:var(--g1)}
+  @media (max-width:860px){.roster{grid-template-columns:repeat(2,1fr)}.forge{grid-template-columns:1fr}.mats .mat span{display:none}.xpt{display:none}.logo small{display:none}}
+  @media (max-width:560px){.mats{display:none}.xpwrap{display:none}.logo{font-size:11px}.tiers{grid-template-columns:1fr 1fr}.slots{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header class="hud"><div class="in">
+  <div class="logo"><img src="/favicon.svg" alt="" class="lg">VIBERQUEST<small>TESTNET ALPHA</small></div>
+  <div class="lvlbox" id="lvlbox" hidden><span class="lvlbadge" id="lvl">LV 1</span><div class="xpwrap"><div class="xpbar"><i id="xpbar"></i></div><div class="xpt" id="xpt"></div></div></div>
+  <div class="mats" id="mats" hidden></div>
+  <div class="hudr"><a class="iconbtn" href="/guide" title="full guide" style="width:auto;padding:0 10px;font-family:var(--pixel);font-size:8px">GUIDE</a><button class="iconbtn" id="help" title="how to play" hidden>?</button><button class="iconbtn" id="snd" title="sound">♪</button><a class="iconbtn" href="https://testnet.vibevibe.fun" target="_blank" rel="noopener" title="trade on vibe/vibe">↗</a><button class="iconbtn" id="out" title="sign out" hidden>⏻</button></div>
+</div></header>
+
+<div class="stage">
+  <div class="world" id="world">
+    <canvas id="town" width="640" height="360"></canvas>
+    <div class="tip" id="tip"></div>
+    <div class="labels" id="labels"></div>
+    <div class="online" id="online" hidden><i></i><span id="onn">1</span> IN TOWN</div>
+    <div class="emotes" id="emotes" hidden><button data-emote="gm" title="1">GM</button><button data-emote="lfg" title="2">LFG</button><button data-emote="gg" title="3">GG</button><button data-emote="fire" title="4">🔥</button><button data-emote="rocket" title="5">🚀</button><button data-emote="wave" title="6">👋</button></div>
+    <div class="welcome" id="welcome">
+      <h1>YOUR TRADES ARE<br>YOUR <em>QUESTS</em></h1>
+      <p>Your wallet is your character. Quests complete themselves when you trade on vibe/vibe, verified straight from Robinhood Chain. Forge gear, level up, climb with your guild.</p>
+      <button class="btn lime" id="in">CONNECT WALLET TO PLAY</button>
+      <div class="msg" id="msg">you sign a message to prove the wallet is yours. no transaction, nothing to pay</div>
+      <a href="/guide" style="margin-top:14px;font-family:var(--pixel);font-size:10px;color:var(--lime)">HOW TO PLAY →</a>
+    </div>
+  </div>
+  <div class="quick" id="quick" hidden>
+    <button data-open="quests">📜 QUESTS<b id="qdot" hidden></b></button>
+    <button data-open="forge">⚒ FORGE</button>
+    <button data-open="hero">🛡 HERO</button>
+    <button data-open="guild">⚑ GUILD<b id="gdot" hidden></b></button>
+    <button data-open="arena">⚔ ARENA</button>
+    <button data-open="fame">🏆 FAME</button>
+    <button data-open="chest">🎁 CHEST<b id="cdot" hidden></b></button>
+    <button data-open="furnace">🔥 FURNACE</button>
+    <button data-open="treasury">🏦 TREASURY</button>
+  </div>
+  <p class="note" id="note"></p>
+</div>
+
+<div class="veil" id="veil"><div class="win"><div class="win-h"><h2 id="wt"></h2><button class="x" id="wx">X</button></div><div class="win-b" id="wb"></div></div></div>
+<div class="banner" id="banner"><h3 id="bh"></h3><p id="bp"></p></div>
+<canvas id="fx"></canvas>
+<div class="toast" id="toast"></div>
+<div class="tut" id="tut" hidden><div class="tutc"><div class="dots" id="tdots"></div><div class="ic" id="tic"></div><h3 id="th"></h3><p id="tp"></p><div class="row"><button class="btn ghost" id="tskip">SKIP</button><button class="btn lime" id="tnext">NEXT</button></div></div></div>
+<footer><span>Viberquest is an unofficial community game, not affiliated with vibe/vibe. Testnet alpha: nothing here has monetary value.</span><span>by <a href="https://x.com/0xHaileyy" target="_blank" rel="noopener">@0xHaileyy</a></span></footer>
+
+<script src="/viber.js?v=2"></script>
+<script src="/items.js?v=2"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n, d = 0) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: d });
+const short = a => a.slice(0, 6) + "…" + a.slice(-4);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const MATS = ["copper", "silver", "gold", "diamond"];
+const api = (p, body) => fetch("/api/" + p, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}).then(r => r.json());
+let ME = null, NPCS = [], es = null;
+
+/* ================= sound ================= */
+const SND = { on: (() => { try { return localStorage.getItem("vq_snd") !== "0"; } catch (_) { return true; } })(), ctx: null };
+function tone(freq, dur = .08, type = "square", vol = .05, delay = 0) {
+  if (!SND.on) return;
+  try {
+    SND.ctx = SND.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = SND.ctx.currentTime + delay, o = SND.ctx.createOscillator(), g = SND.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t0); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); g.connect(SND.ctx.destination); o.start(t0); o.stop(t0 + dur + .02);
+  } catch (_) { }
+}
+const sfx = {
+  click: () => tone(660, .05), open: () => { tone(440, .06); tone(660, .06, "square", .05, .06); },
+  coin: () => { tone(988, .06); tone(1319, .12, "square", .05, .06); },
+  win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .12, "square", .05, i * .09)),
+  fail: () => { tone(220, .15, "sawtooth", .05); tone(165, .25, "sawtooth", .05, .12); },
+  hammer: () => { tone(180, .05, "triangle", .08); tone(1400, .03, "square", .03, .02); },
+  level: () => [392, 523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .14, "square", .05, i * .08)),
+};
+function setSnd() { $("snd").textContent = SND.on ? "♪" : "×"; $("snd").style.opacity = SND.on ? 1 : .5; }
+$("snd").onclick = () => { SND.on = !SND.on; try { localStorage.setItem("vq_snd", SND.on ? "1" : "0"); } catch (_) { } setSnd(); sfx.click(); };
+setSnd();
+
+/* ================= ui helpers ================= */
+const toast = (t, ms = 2600) => { const e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("on"), ms); };
+function banner(h, p) { $("bh").textContent = h; $("bp").textContent = p || ""; const b = $("banner"); b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove("on"), 1700); }
+const gem = m => `<i class="gem" style="background:var(--${m})"></i>`;
+const chips = rw => `<span class="chip">+${fmt(rw.xp)} XP</span>` + Object.entries(rw.mat || {}).map(([m, n]) => `<span class="chip">${gem(m)}${n} ${m}</span>`).join("");
+
+// character portrait: base viber + gear (+ aura glow), drawn into a 40x40 grid canvas
+function portrait(cv, wallet, cls, level, gear, t) {
+  const g = cv.getContext("2d"), S = cv.width / 40; g.clearRect(0, 0, cv.width, cv.height);
+  const aura = gear && Items.TEMPLATES.find(x => x.id === gear.aura);
+  if (aura) {
+    const c = aura.aura === "rainbow" ? `hsl(${(t / 15) % 360},90%,60%)` : aura.aura, r = cv.width * (.42 + Math.sin(t / 400) * .02);
+    const gr = g.createRadialGradient(cv.width / 2, cv.height / 2, 4, cv.width / 2, cv.height / 2, r);
+    gr.addColorStop(0, c + ""); gr.addColorStop(1, "rgba(0,0,0,0)"); g.globalAlpha = .45; g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height); g.globalAlpha = 1;
+  }
+  Viber.draw(g, wallet, cls, level, 4 * S, 4 * S, S);
+  if (gear) Items.drawGear(g, gear, 4 * S, 4 * S, S, t);
+}
+function itemIcon(cv, it, t) {   // a piece of gear on a plain bust, so it reads at small size
+  const g = cv.getContext("2d"), S = cv.width / 40; g.clearRect(0, 0, cv.width, cv.height);
+  if (it.slot === "pet") { Items.drawPet(g, it.template, 10 * S, 10 * S, S * 2); return; }
+  Viber.draw(g, "0x0000000000000000000000000000000000000000", "Fresh", 1, 4 * S, 4 * S, S);
+  Items.drawGear(g, { [it.slot]: it.template }, 4 * S, 4 * S, S, t || 0);
+}
+
+/* ================= the town (top-down, 3/4 view) ================= */
+// A plaza seen from above at a slight angle. Buildings line the top edge with their doors on the plaza; players walk
+// anywhere on the plaza and are drawn back to front (by feet y), so nobody stands "inside" anybody else.
+const W = 640, H = 360, WW = 740, WH = 440, cv = $("town"), ctx = cv.getContext("2d");   // W x H is the view, WW x WH the world
+ctx.imageSmoothingEnabled = false;
+const BASE = 150;                       // where building fronts meet the plaza
+const PLAZA = { x0: 24, x1: WW - 24, y0: BASE + 8, y1: WH - 22 };
+const B = [   // buildings along the top: x, width, facade height, label
+  { id: "quests",   x: 28,  w: 84,  h: 70, label: "QUEST BOARD" },
+  { id: "forge",    x: 124, w: 96,  h: 78, label: "FORGE" },
+  { id: "guild",    x: 234, w: 120, h: 104, label: "GUILD HALL" },
+  { id: "fame",     x: 368, w: 82,  h: 82, label: "HALL OF FAME" },
+  { id: "arena",    x: 464, w: 136, h: 92, label: "ARENA · FANTASY LEAGUE" },
+  { id: "treasury", x: 614, w: 100, h: 86, label: "TREASURY" },
+];
+// things standing on the plaza (x, y = their foot point)
+const FOUNTAIN = { x: 370, y: 300, r: 38 };
+const CHEST = { id: "chest", x: 300, y: 318, w: 20, h: 14, label: "DAILY CHEST" };
+const FURNACE = { id: "furnace", x: 648, y: 300, label: "FURNACE · BURN VQUEST FOR EMBERS" };
+const BOARD = { id: "billboard", x: 560, y: 392, label: "SPONSORED QUESTS" };
+const TAILOR = { id: "tailor", x: 92, y: 372, label: "TAILOR · NAME COLOURS & EMOTES" };
+const SPOTS = [CHEST, FURNACE, BOARD, TAILOR];
+const FORGE_ANVIL = { x: B[1].x + B[1].w - 22, y: BASE + 4 };
+const TREES = [[40, 430], [140, 436], [230, 432], [500, 436], [600, 430], [700, 434], [16, 250], [726, 240], [14, 340], [728, 350]];
+const LAMPS = [[120, 196], [262, 196], [478, 196], [612, 196], [190, 404], [430, 408], [680, 404]];
+const BENCHES = [[300, 236], [440, 236], [300, 370], [440, 370]];
+const FLOWERS = [[40, 200, 46], [40, 300, 46], [660, 200, 50], [200, 420, 70], [460, 424, 60], [300, 424, 40]];
+let cam = { x: 0, y: 0 }, FAN = null;
+const OTHERS = new Map();   // live players: wallet -> { w, x, y, tx, ty, face, cls, level, gear, guild, color, bubble }
+const PS = 1.15, HS = 1.3, NS = 1.05;   // sprite scales: others, you, ghosts
+const EMO = { gm: ["GM"], lfg: ["LFG"], gg: ["GG"], fire: ["🔥", 1], rocket: ["🚀", 1], wave: ["👋", 1], wagmi: ["WAGMI"], ngmi: ["NGMI"], diamond: ["💎", 1], frog: ["🐸", 1], pray: ["🙏", 1], skull: ["💀", 1] };
+let heroBubble = null, town = null, sentKey = "", sentAt = 0;
+const keys = new Set();
+const hero = { x: 370, y: 370, tx: 370, ty: 370, path: [], face: 1, then: null };
+const smoke = [], sparks = [], floats = [];
+let hover = null, T0 = performance.now();
+
+function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function utcHour() { const d = new Date(); return d.getUTCHours() + d.getUTCMinutes() / 60; }
+function nightness() {   // 0 day .. 1 night, with dusk and dawn in between
+  const h = utcHour();
+  if (h >= 7 && h < 17) return 0; if (h >= 20 || h < 5) return 1;
+  return h >= 17 ? (h - 17) / 3 : 1 - (h - 5) / 2;
+}
+function sign(x, y, w, text, col) {
+  rect(x, y, w, 11, "#111317"); rect(x, y, w, 1, col);
+  ctx.fillStyle = col; ctx.font = "7px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  ctx.fillText(text, x + w / 2, y + 2); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+}
+
+// ---------- ground ----------
+const GRASS = Array.from({ length: 260 }, (_, i) => [(i * 137) % WW, (i * 89) % WH, i % 3]);
+function drawGround(t) {
+  rect(0, 0, WW, WH, "#2e5a39");
+  for (const [x, y, k] of GRASS) rect(x, y, 2, k + 1, k ? "#3a6e46" : "#25492e");
+  rect(0, 0, WW, 46, "#1f3d28");   // hedge behind the buildings
+  for (let x = 0; x < WW; x += 14) { rect(x, 30 + Math.sin(x) * 3, 16, 18, "#2b5233"); rect(x + 4, 26 + Math.cos(x) * 3, 8, 6, "#356640"); }
+  // the plaza: stone tiles, a darker rim, a path under every door
+  rect(PLAZA.x0 - 6, BASE, PLAZA.x1 - PLAZA.x0 + 12, PLAZA.y1 - BASE + 8, "#3b3f4a");
+  for (let y = BASE + 2; y < PLAZA.y1 + 4; y += 12) for (let x = PLAZA.x0 - 4 + ((y / 12) % 2) * 9; x < PLAZA.x1 + 4; x += 18) rect(x, y, 17, 11, ((x * 3 + y) % 5) ? "#4b505c" : "#535866");
+  rect(PLAZA.x0 - 6, PLAZA.y1 + 6, PLAZA.x1 - PLAZA.x0 + 12, 3, "#2a2d36");
+  // lighter stone paths from every door, and flower beds
+  for (const b of B) { const dx = b.x + b.w / 2; for (let y = BASE + 2; y < BASE + 40; y += 12) rect(dx - 14, y, 28, 11, "#6b7180"); }
+  for (const [x, y, w] of FLOWERS) { rect(x, y, w, 12, "#4a3424"); for (let i = 0; i < w; i += 5) { rect(x + i + 1, y + 2 + (i % 2) * 4, 3, 3, ["#ff7ad9", "#ffd23f", "#dff902", "#8fe9ff"][(i / 5 + x) % 4 | 0]); rect(x + i + 2, y + 6, 1, 4, "#3a6e46"); } }
+  // a lime ring around the fountain
+  ctx.strokeStyle = "rgba(223,249,2,.18)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(FOUNTAIN.x, FOUNTAIN.y, FOUNTAIN.r + 22, (FOUNTAIN.r + 22) * .55, 0, 0, 7); ctx.stroke();
+}
+
+// ---------- buildings (3/4 view: roof on top, facade below, door on the plaza) ----------
+function roof(x, y, w, h, c1, c2) { rect(x - 4, y, w + 8, h, c1); for (let i = 0; i < h; i += 4) rect(x - 4, y + i, w + 8, 1, c2); rect(x - 6, y + h - 2, w + 12, 4, c2); }
+function windowLit(x, y, w, h, t, i) { const n = nightness(); rect(x, y, w, h, n > .3 && Math.sin(t / 900 + i * 2) > -.6 ? "#ffd86b" : "#9cc3ec"); rect(x, y, w, 1, "#2b2e35"); rect(x + w / 2 - .5, y, 1, h, "#2b2e35"); }
+function drawBuilding(b, t) {
+  const x = b.x, y = BASE - b.h, w = b.w, hl = hover === b.id, n = nightness();
+  if (b.id === "quests") {
+    roof(x + 6, y - 22, w - 12, 22, "#6b4426", "#5a3a20");
+    rect(x + 6, y, w - 12, b.h, "#9a6a40"); rect(x + 10, y + 6, w - 20, b.h - 22, "#7a5232");
+    const done = ME ? ME.quests.filter(q => q.done && !q.claimed).length : 0;
+    for (let i = 0; i < 6; i++) {
+      const px = x + 15 + (i % 3) * 20, py = y + 10 + Math.floor(i / 3) * 18, lit = i < done;
+      rect(px, py, 15, 14, lit ? "#fffbe0" : "#e9e2d0"); rect(px + 6, py - 2, 3, 3, "#ff4b6e");
+      rect(px + 3, py + 4, 9, 1, "#7a6a50"); rect(px + 3, py + 8, 7, 1, "#7a6a50");
+      if (lit && Math.sin(t / 200 + i) > 0) rect(px - 1, py - 1, 17, 16, "rgba(223,249,2,.3)");
+    }
+    rect(x + 10, BASE - 12, w - 20, 12, "#5a3a22");
+    sign(x + 12, y - 36, w - 24, "QUESTS", "#dff902");
+  } else if (b.id === "forge") {
+    roof(x, y - 26, w, 26, "#3a3e48", "#2f333c");
+    rect(x + w - 24, y - 54, 14, 34, "#4a4f5a"); rect(x + w - 26, y - 56, 18, 4, "#5c6270");   // chimney
+    rect(x, y, w, b.h, "#4a4f5a");
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 8; c++) rect(x + c * 12 + (r % 2) * 6, y + 2 + r * 8, 11, 7, (r + c) % 3 ? "#535866" : "#4a4f5a");
+    const f = .6 + Math.sin(t / 90) * .25;
+    rect(x + 12, BASE - 40, 28, 40, "#1a1410"); rect(x + 14, BASE - 38, 24, 38, `rgba(255,${120 + Math.round(f * 60)},26,${.55 + f * .3})`);
+    windowLit(x + 52, y + 14, 16, 14, t, 1);
+    rect(FORGE_ANVIL.x - 12, FORGE_ANVIL.y - 8, 24, 5, "#6b7280"); rect(FORGE_ANVIL.x - 7, FORGE_ANVIL.y - 3, 14, 8, "#2b2e35");
+    if (Math.random() < .25) smoke.push({ x: x + w - 18 + Math.random() * 4, y: y - 58, vy: -.25 - Math.random() * .2, vx: .1 + Math.random() * .15, life: 1 });
+    if (Math.random() < .05) sparks.push({ x: FORGE_ANVIL.x, y: FORGE_ANVIL.y - 9, vx: (Math.random() - .5) * 1.4, vy: -1 - Math.random(), life: 1, c: "#ffb03b" });
+    sign(x + 16, y - 40, w - 32, "FORGE", "#ffb03b");
+  } else if (b.id === "guild") {
+    roof(x, y - 30, w, 30, "#3d3570", "#322b5e");
+    const col = ME && ME.guild ? "#b26bff" : "#555b62";
+    rect(x + w / 2, y - 64, 2, 36, "#c9d2d8");
+    for (let i = 0; i < 20; i++) rect(x + w / 2 + 2 + i, y - 62 + Math.sin(t / 220 + i / 3) * 2, 1, 12, i % 6 < 3 ? col : "#dff902");
+    rect(x, y, w, b.h, "#2b2550");
+    for (let i = 0; i < 5; i++) rect(x + 6 + i * 26, y + 4, 6, b.h - 4, "#3d3570");
+    for (let i = 0; i < 4; i++) windowLit(x + 15 + i * 26, y + 14, 12, 18, t, i + 3);
+    rect(x + w / 2 - 15, BASE - 36, 30, 36, "#120f24"); rect(x + w / 2 - 13, BASE - 34, 26, 34, "#1c1838");
+    if (ME && ME.guild_base && ME.guild_base.level) for (let i = 0; i < ME.guild_base.level; i++) rect(x + w / 2 - 14 + i * 10, y - 8, 8, 8, "#ffd23f");   // base level stars
+    sign(x + 18, y - 44, w - 36, "GUILD", "#b26bff");
+  } else if (b.id === "fame") {
+    roof(x + 4, y - 18, w - 8, 18, "#c99a12", "#a07a0e");
+    rect(x + 4, y, w - 8, b.h, "#3a3f45"); for (let i = 0; i < 4; i++) rect(x + 10 + i * 18, y + 4, 6, b.h - 4, "#555b62");
+    rect(x + w / 2 - 12, y + 10, 24, 26, "#ffd23f"); rect(x + w / 2 - 18, y + 10, 36, 6, "#ffd23f"); rect(x + w / 2 - 5, y + 36, 10, 8, "#c99a12"); rect(x + w / 2 - 4, y + 18, 8, 8, "#fff1a8");
+    if (Math.sin(t / 300) > .6) rect(x + w / 2, y + 6, 2, 4, "#ffffff");
+    rect(x + w / 2 - 12, BASE - 26, 24, 26, "#1b1e21");
+    sign(x + 10, y - 32, w - 20, "FAME", "#ffd23f");
+  } else if (b.id === "arena") {
+    rect(x - 4, y - 10, w + 8, 12, "#6e3446"); rect(x - 4, y - 10, w + 8, 2, "#9a4a62");
+    for (let i = 0; i < 34; i++) rect(x + 1 + i * 4, y - 14 + (Math.sin(t / 140 + i * 1.7) > .75 ? -2 : 0), 2, 3, ["#dff902", "#ff7ad9", "#8fe9ff", "#ffd23f", "#f2f4f3"][i % 5]);
+    rect(x, y, w, b.h, "#4a2633");
+    for (let i = 0; i < 7; i++) { if (i === 3) continue; rect(x + 6 + i * 18.5, y + 30, 12, 26, "#1a0d13"); rect(x + 6 + i * 18.5, y + 28, 12, 3, "#9a4a62"); }
+    rect(x + w / 2 - 16, BASE - 36, 32, 36, "#120a0e"); for (let i = 0; i < 4; i++) rect(x + w / 2 - 14 + i * 8, BASE - 34, 2, 34, "#3a2a30");
+    rect(x + 26, y + 2, w - 52, 22, "#0b0c0e"); rect(x + 26, y + 2, w - 52, 2, "#ff4b6e");
+    ctx.font = "6px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillStyle = "#ff7ad9"; ctx.fillText("FANTASY", x + w / 2, y + 6);
+    ctx.fillStyle = Math.sin(t / 300) > -.6 ? "#dff902" : "#8fa000"; ctx.fillText(FAN ? fmt(FAN.points) + " PTS" : "PICK 5", x + w / 2, y + 15); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    for (const fx of [x, x + w - 2]) { rect(fx, y - 44, 2, 32, "#c9d2d8"); for (let i = 0; i < 12; i++) rect(fx + 2 + i, y - 43 + Math.sin(t / 200 + i / 2 + fx) * 1.5, 1, 8, i % 4 < 2 ? "#ff4b6e" : "#dff902"); }
+    sign(x + 34, y - 30, w - 68, "ARENA", "#ff4b6e");
+  } else if (b.id === "treasury") {
+    roof(x, y - 20, w, 20, "#34424e", "#2a3640");
+    rect(x, y, w, b.h, "#24303a"); for (let i = 0; i < 5; i++) rect(x + 6 + i * 20, y + 4, 8, b.h - 4, "#2e3c47");
+    rect(x + w / 2 - 16, y + 18, 32, 32, "#5c6b78"); rect(x + w / 2 - 12, y + 22, 24, 24, "#45525d");
+    const live = ME && ME.economy && ME.economy.live;
+    rect(x + w / 2 - 3, y + 31, 6, 6, live ? "#dff902" : "#ffd23f"); rect(x + w / 2 - 1, y + 37, 2, 5, live ? "#dff902" : "#ffd23f");
+    rect(x + w / 2 - 12, BASE - 22, 24, 22, "#1b1e21");
+    sign(x + 14, y - 34, w - 28, live ? "TREASURY" : "SOON", live ? "#dff902" : "#7d848a");
+  }
+  if (hl) { ctx.strokeStyle = "#dff902"; ctx.lineWidth = 1; ctx.strokeRect(x - 4.5, BASE - b.h - 46.5, w + 9, b.h + 50); }
+}
+
+// ---------- plaza objects (each draws from its foot point) ----------
+function drawFountain(t) {
+  const { x, y, r } = FOUNTAIN;
+  ctx.fillStyle = "#6b7280"; ctx.beginPath(); ctx.ellipse(x, y, r, r * .55, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#3f86c9"; ctx.beginPath(); ctx.ellipse(x, y - 2, r - 5, (r - 5) * .5, 0, 0, 7); ctx.fill();
+  for (let i = 0; i < 6; i++) { const a = t / 900 + i, rr = (r - 10) * ((t / 1200 + i / 6) % 1); ctx.strokeStyle = `rgba(200,235,255,${.5 - rr / (r * 2)})`; ctx.beginPath(); ctx.ellipse(x, y - 2, Math.abs(rr), Math.abs(rr) * .5, 0, 0, 7); ctx.stroke(); }
+  rect(x - 4, y - 30, 8, 28, "#8a919c"); rect(x - 9, y - 32, 18, 4, "#9aa3ad");
+  for (let i = 0; i < 8; i++) { const ph = (t / 600 + i / 8) % 1, ang = i / 8 * Math.PI * 2; rect(x + Math.cos(ang) * 14 * ph, y - 34 + ph * ph * 30 - Math.sin(ph * Math.PI) * 10, 2, 2, "#cfeaff"); }
+  rect(x - 2, y - 42, 4, 10, "#cfeaff"); // the jet
+}
+function drawChest(t) {
+  const open = ME && ME.chest_open, c = CHEST, bob = open ? Math.round(Math.sin(t / 250)) : 0, x = c.x - c.w / 2, y = c.y - c.h;
+  if (open) { const g = ctx.createRadialGradient(c.x, y + 6, 1, c.x, y + 6, 24); g.addColorStop(0, "rgba(255,210,63,.5)"); g.addColorStop(1, "rgba(255,210,63,0)"); ctx.fillStyle = g; ctx.fillRect(c.x - 26, y - 18, 52, 44); }
+  rect(x, y + bob, c.w, c.h, open ? "#a0612b" : "#5a4632"); rect(x, y + bob, c.w, 5, open ? "#c47a36" : "#6a5442");
+  rect(c.x - 2, y + 3 + bob, 4, 5, open ? "#ffd23f" : "#8a7a60"); rect(x, y + 5 + bob, c.w, 1, "#3a2a1a");
+  if (hover === "chest") { ctx.strokeStyle = "#dff902"; ctx.strokeRect(x - 2.5, y - 2.5, c.w + 5, c.h + 5); }
+}
+function drawFurnace(t) {
+  const { x, y } = FURNACE, live = ME && ME.economy && ME.economy.live;
+  rect(x - 20, y - 22, 40, 22, "#5a3a2a"); for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) rect(x - 20 + c * 8 + (r % 2) * 4, y - 22 + r * 7, 7, 6, (r + c) % 2 ? "#6e4632" : "#5a3a2a");
+  rect(x - 24, y - 26, 48, 5, "#7a5a44");
+  const f = live ? 1 : .35;
+  for (let i = 0; i < 9; i++) { const ph = (t / 380 + i / 9) % 1; rect(x - 14 + i * 3.2, y - 26 - ph * (16 + (i % 3) * 5), 3, 4, ph < .4 ? `rgba(255,236,120,${f})` : ph < .7 ? `rgba(255,122,26,${f})` : `rgba(255,75,110,${f * .8})`); }
+  if (live && Math.random() < .2) sparks.push({ x: x + (Math.random() - .5) * 20, y: y - 34, vx: (Math.random() - .5) * .6, vy: -.8 - Math.random(), life: 1, c: "#ff7a1a" });
+  sign(x - 30, y - 64, 60, "FURNACE", "#ff7a1a");
+  if (hover === "furnace") { ctx.strokeStyle = "#dff902"; ctx.strokeRect(x - 30.5, y - 66.5, 61, 68); }
+}
+function drawBillboard(t) {
+  const { x, y } = BOARD, sp = ME && ME.sponsored && ME.sponsored[Math.floor(t / 5000) % Math.max(1, ME.sponsored.length)];
+  rect(x - 34, y - 46, 3, 46, "#3b3f4a"); rect(x + 31, y - 46, 3, 46, "#3b3f4a");
+  rect(x - 40, y - 74, 80, 34, "#0b0c0e"); rect(x - 40, y - 74, 80, 2, sp ? "#dff902" : "#555b62"); rect(x - 40, y - 42, 80, 2, "#2b2e35");
+  ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.font = "5px 'Press Start 2P', monospace"; ctx.fillStyle = "#7d848a"; ctx.fillText(sp ? "SPONSORED QUEST" : "SPONSOR SLOT", x, y - 68);
+  ctx.font = "8px 'Press Start 2P', monospace"; ctx.fillStyle = sp ? (Math.sin(t / 250) > -.5 ? "#dff902" : "#b8cc00") : "#3b3f4a";
+  ctx.fillText(sp ? "$" + sp.symbol : "YOUR TOKEN", x, y - 58); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  if (hover === "billboard") { ctx.strokeStyle = "#dff902"; ctx.strokeRect(x - 42.5, y - 76.5, 85, 78); }
+}
+function drawTailor(t) {
+  const { x, y } = TAILOR;
+  rect(x - 30, y - 30, 60, 30, "#5a3a52");
+  for (let i = 0; i < 6; i++) rect(x - 34 + i * 12, y - 44, 12, 14, i % 2 ? "#ff7ad9" : "#f2f4f3");
+  for (let i = 0; i < 6; i++) rect(x - 34 + i * 12, y - 32, 12, 3, i % 2 ? "#c95aa8" : "#c9d2d8");
+  rect(x - 20, y - 26, 10, 18, "#dff902"); rect(x - 17, y - 30, 4, 4, "#f2f4f3");   // a mannequin in lime
+  rect(x + 4, y - 24, 18, 6, "#8fe9ff"); rect(x + 4, y - 16, 18, 6, "#ff4b6e");    // folded cloth
+  sign(x - 26, y - 60, 52, "TAILOR", "#ff7ad9");
+  if (hover === "tailor") { ctx.strokeStyle = "#dff902"; ctx.strokeRect(x - 36.5, y - 62.5, 73, 64); }
+}
+function drawTree(x, y, t) { rect(x - 3, y - 14, 6, 14, "#5a3a22"); const s = Math.sin(t / 900 + x) * 1; rect(x - 13 + s, y - 34, 26, 22, "#24502f"); rect(x - 9 + s, y - 42, 18, 12, "#2f6a3c"); rect(x - 5 + s, y - 38, 6, 4, "#3e8a4f"); }
+function drawBench(x, y) { rect(x - 16, y - 10, 32, 4, "#8a5a32"); rect(x - 16, y - 6, 32, 3, "#6b4426"); rect(x - 14, y - 3, 3, 3, "#2b2e35"); rect(x + 11, y - 3, 3, 3, "#2b2e35"); rect(x - 16, y - 16, 32, 3, "#8a5a32"); }
+function drawLamp(x, y) { rect(x - 1, y - 30, 3, 30, "#1b1e21"); rect(x - 4, y - 34, 9, 5, "#2b2e35"); rect(x - 2, y - 30, 5, 3, nightness() > .3 ? "#fffbd0" : "#9aa3ad"); }
+
+// ---------- characters (x, y = feet) ----------
+function drawChar(x, y, wallet, cls, level, gear, t, s = 1, face = 1, walking = false) {
+  x -= 16 * s; y -= 32 * s;
+  const bob = walking ? Math.abs(Math.sin(t / 90)) * 2 : Math.sin(t / 400);
+  const aura = gear && Items.TEMPLATES.find(z => z.id === gear.aura);
+  if (aura) {
+    const c = aura.aura === "rainbow" ? `hsl(${(t / 15) % 360},90%,60%)` : aura.aura;
+    const g = ctx.createRadialGradient(x + 16 * s, y + 14 * s, 2, x + 16 * s, y + 14 * s, 24 * s); g.addColorStop(0, c); g.addColorStop(1, "rgba(0,0,0,0)");
+    const a0 = ctx.globalAlpha; ctx.globalAlpha = a0 * (.6 + Math.sin(t / 300) * .15); ctx.fillStyle = g; ctx.fillRect(x - 12 * s, y - 12 * s, 56 * s, 52 * s); ctx.globalAlpha = a0;
+  }
+  ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(x + 16 * s, y + 31 * s, 10 * s, 3 * s, 0, 0, 7); ctx.fill();
+  ctx.save();
+  if (face < 0) { ctx.translate(x + 32 * s, 0); ctx.scale(-1, 1); x = 0; }
+  Viber.draw(ctx, wallet, cls, level, x, y - bob, s);
+  if (gear) Items.drawGear(ctx, gear, x, y - bob, s, t);
+  ctx.restore();
+}
+// names are HTML on top of the canvas, so they stay sharp at any zoom
+let LBL = [];
+const lblPool = new Map();
+function drawLabel(text, x, y, color, opt = {}) { LBL.push({ key: opt.key || text, text, sub: opt.sub, x, y, color, cls: opt.cls || "" }); }
+function syncLabels(cx, cy) {
+  const layer = $("labels"), sc = cv.clientWidth / W, seen = new Set();
+  for (const l of LBL) {
+    let el = lblPool.get(l.key);
+    if (!el) { el = document.createElement("div"); el.className = "lbl"; layer.appendChild(el); lblPool.set(l.key, el); }
+    const html = (l.sub ? `<small>${esc(l.sub)}</small>` : "") + esc(l.text);
+    if (el._h !== html) { el.innerHTML = html; el._h = html; }
+    if (el._c !== l.color) { el.style.color = l.color; el._c = l.color; }
+    if (el._k !== l.cls) { el.className = "lbl " + l.cls; el._k = l.cls; }
+    el.style.transform = `translate(${Math.round((l.x - cx) * sc)}px, ${Math.round((l.y - cy) * sc)}px) translate(-50%, -100%)`;
+    el.style.display = ""; seen.add(l.key);
+  }
+  for (const [k, el] of lblPool) if (!seen.has(k)) el.style.display = "none";
+  LBL = [];
+}
+const nameOf = o => o.x_name ? "@" + o.x_name : o.w.slice(0, 6) + "…" + o.w.slice(-4);
+function drawFx() {
+  for (const p of smoke) { p.x += p.vx; p.y += p.vy; p.life -= .006; rect(p.x, p.y, 4, 4, `rgba(180,185,195,${Math.max(0, p.life) * .45})`); }
+  for (const p of sparks) { p.x += p.vx; p.y += p.vy; p.vy += .05; p.life -= .03; rect(p.x, p.y, 1, 1, p.c); }
+  for (const f of floats) { f.y -= .35; f.life -= .012; ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.c; ctx.font = "7px 'Press Start 2P', monospace"; ctx.textAlign = "center"; ctx.fillText(f.text, f.x, f.y); ctx.globalAlpha = 1; ctx.textAlign = "left"; }
+  for (const a of [smoke, sparks, floats]) for (let i = a.length - 1; i >= 0; i--) if (a[i].life <= 0) a.splice(i, 1);
+}
+function drawBubble(b, cx, by, now) {   // speech bubble over a head: an emote or a trade
+  if (!b) return; const age = now - b.t; if (age > 3800) return;
+  const pop = Math.min(1, age / 120), fade = age > 3300 ? 1 - (age - 3300) / 500 : 1;
+  ctx.globalAlpha = fade;
+  ctx.font = b.emoji ? "11px sans-serif" : "6px 'Press Start 2P', monospace";
+  const tw = Math.ceil(ctx.measureText(b.text).width), w = tw + 10, h = b.emoji ? 15 : 13, x = Math.round(cx - w / 2), y = Math.round(by - h - 3 - (1 - pop) * 4);
+  rect(x, y, w, h, b.c || "#f2f4f3"); rect(x - 1, y + 1, w + 2, h - 2, b.c || "#f2f4f3"); rect(cx - 2, y + h, 4, 2, b.c || "#f2f4f3"); rect(cx - 1, y + h + 2, 2, 1, b.c || "#f2f4f3");
+  ctx.fillStyle = "#0b0c0e"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(b.text, cx, y + h / 2 + (b.emoji ? 1 : .5));
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
+}
+function floatText(text, c = "#dff902") { floats.push({ x: hero.x, y: hero.y - 32 * HS - 6, text, c, life: 1 }); }
+
+// ---------- walking: straight lines on the plaza, stepping around the fountain ----------
+const clampP = (x, y) => [Math.max(PLAZA.x0, Math.min(PLAZA.x1, x)), Math.max(PLAZA.y0, Math.min(PLAZA.y1, y))];
+function outOfFountain(x, y) {
+  const dx = x - FOUNTAIN.x, dy = (y - FOUNTAIN.y) / .55, d = Math.hypot(dx, dy), r = FOUNTAIN.r + 8;
+  return d >= r ? [x, y] : [FOUNTAIN.x + dx / (d || 1) * r, FOUNTAIN.y + dy / (d || 1) * r * .55];
+}
+function routeTo(o, x, y) {
+  [x, y] = outOfFountain(...clampP(x, y));
+  // if the straight line crosses the fountain, go round it through the side closest to the line
+  const ax = o.x, ay = o.y, dx = x - ax, dy = y - ay, L = Math.hypot(dx, dy) || 1;
+  const t = Math.max(0, Math.min(1, ((FOUNTAIN.x - ax) * dx + (FOUNTAIN.y - ay) * dy) / (L * L)));
+  const px = ax + dx * t, py = ay + dy * t, near = Math.hypot(px - FOUNTAIN.x, (py - FOUNTAIN.y) / .55);
+  o.path = [];
+  if (near < FOUNTAIN.r + 8 && t > 0 && t < 1) {
+    const nx = -dy / L, ny = dx / L, side = ((px - FOUNTAIN.x) * nx + (py - FOUNTAIN.y) * ny) >= 0 ? 1 : -1, R = FOUNTAIN.r + 16;
+    o.path.push(clampP(FOUNTAIN.x + nx * side * R, FOUNTAIN.y + ny * side * R * .62));
+  }
+  o.path.push([x, y]); [o.tx, o.ty] = o.path[0];
+}
+function step(o, speed) {   // move o towards its next waypoint; true while moving
+  const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy);
+  if (d < 1) { if (o.path && o.path.length > 1) { o.path.shift(); [o.tx, o.ty] = o.path[0]; return true; } return false; }
+  const k = Math.min(speed, d) / d; o.x += dx * k; o.y += dy * k; if (Math.abs(dx) > .3) o.face = dx > 0 ? 1 : -1;
+  return true;
+}
+const door = b => [b.x + b.w / 2, PLAZA.y0 + 2];
+function nearBuilding() {   // the door (or plaza object) the hero is standing at
+  for (const s of SPOTS) if (Math.hypot(hero.x - s.x, (hero.y - s.y) * 1.6) < 30) return s;
+  return B.find(b => { const [dx, dy] = door(b); return Math.abs(hero.x - dx) < b.w / 2 && hero.y - dy < 22; }) || null;
+}
+
+// ---------- frame ----------
+function frame(now) {
+  const t = Math.max(0, now - T0);   // the first rAF timestamp can be older than T0
+  try { drawFrame(now, t); } catch (e) { console.error("frame", e); }   // one bad frame must never stop the town
+  requestAnimationFrame(frame);
+}
+function drawFrame(now, t) {
+  if (ME && !current) {   // keyboard walking: arrows or WASD, diagonals too
+    const kx = (keys.has("r") ? 1 : 0) - (keys.has("l") ? 1 : 0), ky = (keys.has("d") ? 1 : 0) - (keys.has("u") ? 1 : 0);
+    if (kx || ky) { const [nx, ny] = outOfFountain(...clampP(hero.x + kx * 8, hero.y + ky * 8)); hero.path = [[nx, ny]]; hero.tx = nx; hero.ty = ny; hero.then = null; }
+  }
+  cam.x += (Math.max(0, Math.min(WW - W, hero.x - W / 2)) - cam.x) * .1;
+  cam.y += (Math.max(0, Math.min(WH - H, hero.y - 130 - H / 2)) - cam.y) * .1;   // keep the building fronts in view
+  const cx = Math.round(cam.x), cy = Math.round(cam.y);
+  ctx.save(); ctx.translate(-cx, -cy);
+  drawGround(t);
+  for (const b of B) drawBuilding(b, t);
+  // everything standing on the plaza is drawn back to front by its feet
+  const items = [];
+  for (const [x, y] of TREES) items.push([y, () => drawTree(x, y, t)]);
+  for (const [x, y] of LAMPS) items.push([y, () => drawLamp(x, y)]);
+  for (const [x, y] of BENCHES) items.push([y, () => drawBench(x, y)]);
+  items.push([FOUNTAIN.y + 10, () => drawFountain(t)], [CHEST.y, () => drawChest(t)], [FURNACE.y, () => drawFurnace(t)], [BOARD.y, () => drawBillboard(t)], [TAILOR.y, () => drawTailor(t)]);
+  for (const n of NPCS) {
+    if (OTHERS.has(n.wallet)) continue;   // the real one is here
+    if (!step(n, .35) && Math.random() < .004) routeTo(n, PLAZA.x0 + Math.random() * (PLAZA.x1 - PLAZA.x0), PLAZA.y0 + 20 + Math.random() * (PLAZA.y1 - PLAZA.y0 - 20));
+    items.push([n.y, () => { ctx.globalAlpha = .5; drawChar(n.x, n.y, n.wallet, "Fresh", 10, n.gear, t + n.x * 10, NS, n.face, Math.abs(n.x - n.tx) + Math.abs(n.y - n.ty) > 1); drawLabel(n.wallet.slice(0, 6) + "…" + n.wallet.slice(-4), n.x, n.y - 32 * NS - 3, "#f2f4f3", { key: "g:" + n.wallet, sub: n.label, cls: "ghost" }); ctx.globalAlpha = 1; }]);
+  }
+  for (const o of OTHERS.values()) {
+    const moving = step(o, 1.6);
+    items.push([o.y, () => {
+      drawChar(o.x, o.y, o.w, o.cls, o.level, o.gear, t + o.x * 7, PS, o.face, moving);
+      if (o.gear && o.gear.pet) Items.drawPet(ctx, o.gear.pet, o.x + (o.face > 0 ? -28 : 18), o.y - 11 + Math.sin(t / 200 + o.x) * 2, 1);
+      drawLabel(nameOf(o), o.x, o.y - 32 * PS - 3, hover === "p:" + o.w ? "#dff902" : (o.color || "#f2f4f3"), { key: "p:" + o.w, sub: "LV" + o.level });
+      drawBubble(o.bubble, o.x, o.y - 32 * PS - 10, now);
+    }]);
+  }
+  const walking = step(hero, 1.9);
+  if (walking && Math.random() < .3) smoke.push({ x: hero.x, y: hero.y - 2, vy: -.1, vx: -hero.face * .2, life: .5 });
+  if (!walking && hero.then) { const f = hero.then; hero.then = null; f(); }
+  const wallet = ME ? ME.wallet : "0x7f1ef6df0ed87fd5d1be00057544bdeaa5416baa";
+  items.push([hero.y, () => {
+    drawChar(hero.x, hero.y, wallet, ME ? ME.cls : "Curve Surfer", ME ? ME.level : 49, ME ? ME.gear : { head: "crown", aura: "flame" }, t, HS, hero.face, walking);
+    const petId = ME ? ME.gear.pet : "dragon";
+    if (petId) Items.drawPet(ctx, petId, hero.x + (hero.face > 0 ? -30 : 18), hero.y - 12 + Math.sin(t / 200) * 2, 1.2);
+    if (ME) {
+      const nb = !walking && !current && nearBuilding();
+      drawLabel(nb ? "press E · " + nb.label.split(" ·")[0].toLowerCase() : "you", hero.x, hero.y - 32 * HS - 3, ME.unlocks && ME.unlocks.name_color || "#dff902", { key: "me", sub: "LV" + ME.level, cls: "me" });
+    }
+    drawBubble(heroBubble, hero.x, hero.y - 32 * HS - 10, now);
+  }]);
+  items.sort((a, b) => a[0] - b[0]).forEach(([, f]) => f());
+  drawFx();
+  // night: darken the world, then add the lights back
+  const nt = nightness();
+  if (nt > 0) {
+    rect(cx, cy, W, H, `rgba(8,10,34,${.5 * nt})`);
+    ctx.globalCompositeOperation = "lighter";
+    const glow = (x, y, r, c, a) => { const g = ctx.createRadialGradient(x, y, 1, x, y, r); g.addColorStop(0, c.replace("A", a)); g.addColorStop(1, c.replace("A", 0)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); };
+    for (const [x, y] of LAMPS) glow(x, y - 30, 42, "rgba(255,230,140,A)", .35 * nt);
+    glow(B[1].x + 26, BASE - 20, 46, "rgba(255,140,40,A)", .35 * nt);
+    glow(FURNACE.x, FURNACE.y - 30, 60, "rgba(255,110,40,A)", (ME && ME.economy && ME.economy.live ? .45 : .2) * nt);
+    glow(FOUNTAIN.x, FOUNTAIN.y - 10, 50, "rgba(120,190,255,A)", .15 * nt);
+    ctx.globalCompositeOperation = "source-over";
+  }
+  ctx.restore();
+  syncLabels(cx, cy);
+  if (ME) syncPos(now);
+}
+requestAnimationFrame(frame);
+
+// ---------- pointer: players, buildings and plaza objects are clickable; anywhere else walks there ----------
+function hit(mx, my) {
+  for (const o of OTHERS.values()) if (Math.abs(mx - o.x) < 12 && my <= o.y + 2 && my >= o.y - 32 * PS) return { id: "p:" + o.w, label: (o.guild ? o.guild + " · " : "") + o.cls.toUpperCase() + " · LV " + o.level, player: o.w };
+  if (Math.abs(mx - CHEST.x) < 14 && my <= CHEST.y + 3 && my >= CHEST.y - 20) return CHEST;
+  if (Math.abs(mx - FURNACE.x) < 30 && my <= FURNACE.y + 2 && my >= FURNACE.y - 66) return FURNACE;
+  if (Math.abs(mx - BOARD.x) < 42 && my <= BOARD.y - 38 && my >= BOARD.y - 76) return BOARD;
+  if (Math.abs(mx - TAILOR.x) < 36 && my <= TAILOR.y + 2 && my >= TAILOR.y - 62) return TAILOR;
+  return B.find(b => mx >= b.x - 4 && mx <= b.x + b.w + 4 && my >= BASE - b.h - 46 && my <= BASE + 4) || null;
+}
+function toWorld(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W + Math.round(cam.x), (e.clientY - r.top) / r.height * H + Math.round(cam.y), r]; }
+cv.addEventListener("mousemove", e => {
+  if (!ME) return;
+  const [mx, my, r] = toWorld(e), h = hit(mx, my); hover = h ? h.id : null; cv.style.cursor = h ? "pointer" : "default";
+  const tip = $("tip"); if (h) { tip.style.display = "block"; tip.textContent = h.label; tip.style.left = (e.clientX - r.left) + "px"; tip.style.top = (e.clientY - r.top) + "px"; } else tip.style.display = "none";
+});
+cv.addEventListener("mouseleave", () => { hover = null; $("tip").style.display = "none"; });
+cv.addEventListener("click", e => {
+  if (!ME) return;
+  const [mx, my] = toWorld(e), h = hit(mx, my); sfx.click();
+  if (!h) { routeTo(hero, mx, my); hero.then = null; return; }
+  if (h.player) { viewing = h.player; return openWin("player"); }
+  goTo(h.id);
+});
+function goTo(id) {
+  const s = SPOTS.find(x => x.id === id), b = B.find(x => x.id === id);
+  const [x, y] = s ? [s.x, s.y + 14] : door(b);
+  routeTo(hero, x, y); hero.then = () => openWin(id);
+}
+const KEYMAP = { ArrowLeft: "l", a: "l", A: "l", ArrowRight: "r", d: "r", D: "r", ArrowUp: "u", w: "u", W: "u", ArrowDown: "d", s: "d", S: "d" };
+addEventListener("keydown", e => {
+  if (!ME || /INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || !$("tut").hidden) return;
+  if (KEYMAP[e.key] && !current) { keys.add(KEYMAP[e.key]); e.preventDefault(); }
+  if ((e.key === "e" || e.key === "E" || e.key === "Enter") && !current) { const nb = nearBuilding(); if (nb) { sfx.click(); openWin(nb.id); } }
+});
+addEventListener("keyup", e => { if (KEYMAP[e.key]) keys.delete(KEYMAP[e.key]); });
+addEventListener("blur", () => keys.clear());
+document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { sfx.click(); goTo(b.dataset.open); });
+
+/* ================= big-screen effects (confetti etc.) ================= */
+const fxc = $("fx"), fx = fxc.getContext("2d"); let parts = [];
+function confetti(n = 120, colors = ["#dff902", "#ffd23f", "#8fe9ff", "#ff7ad9", "#b26bff"]) {
+  fxc.width = innerWidth; fxc.height = innerHeight;
+  for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2, y: innerHeight / 2, vx: (Math.random() - .5) * 14, vy: -Math.random() * 12 - 3, s: 4 + Math.random() * 5, c: colors[i % colors.length], life: 1 });
+  if (parts.length === n) requestAnimationFrame(fxLoop);
+}
+function fxLoop() {
+  fx.clearRect(0, 0, fxc.width, fxc.height);
+  for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += .35; p.vx *= .99; p.life -= .012; fx.fillStyle = p.c; fx.globalAlpha = Math.max(0, p.life); fx.fillRect(p.x, p.y, p.s, p.s); }
+  fx.globalAlpha = 1; parts = parts.filter(p => p.life > 0 && p.y < fxc.height + 20);
+  if (parts.length) requestAnimationFrame(fxLoop); else fx.clearRect(0, 0, fxc.width, fxc.height);
+}
+
+/* ================= windows ================= */
+let viewing = null;
+let current = null, forgeSel = { rarity: "common", slot: "head" }, questTab = "daily", fameTab = "now", fameWeek = null;
+const TIER = ["BRONZE", "SILVER", "GOLD", "DIAMOND"];
+const tierB = t => `<span class="tier-b t${t || 0}">${TIER[t || 0]}</span>`;
+const BADGE = b => b.badge === "guild" ? "GUILD CHAMP" : `${b.badge === "fame" ? "FAME" : "ARENA"} #${b.rank}`;
+function openWin(id) { current = id; sfx.open(); $("veil").classList.add("on"); renderWin(); }
+function closeWin() { current = null; $("veil").classList.remove("on"); }
+$("wx").onclick = closeWin; $("veil").addEventListener("click", e => { if (e.target.id === "veil") closeWin(); });
+addEventListener("keydown", e => { if (e.key === "Escape") closeWin(); });
+
+function progText(q) {
+  if (q.type === "volume") return `${(q.progress / 1000).toFixed(3)} / ${(q.target / 1000).toFixed(1)} ETH`;
+  if (q.type === "hold") return q.done ? "held" : `${Math.floor(q.progress / 60)}h ${q.progress % 60}m / ${q.target / 60}h`;
+  return `${fmt(q.progress)} / ${fmt(q.target)}`;
+}
+const until = d => { if (!d) return ""; const s = (Date.parse(d) - Date.now()) / 1000; return s <= 0 ? "ended" : s < 3600 ? Math.ceil(s / 60) + "m left" : s < 86400 ? Math.floor(s / 3600) + "h left" : Math.floor(s / 86400) + "d " + Math.floor(s % 86400 / 3600) + "h left"; };
+function qcard(q) {
+  const pct = Math.max(q.done ? 100 : 3, Math.min(100, q.progress / q.target * 100));
+  const label = q.kind === "story" && ME && ME.story ? `STORY · CHAPTER ${Math.min(ME.story.total, ME.story.done + (q.claimed ? 0 : 1))} OF ${ME.story.total}` : q.kind.toUpperCase();
+  const rr = q.kind === "daily" && !q.done && ME ? (ME.reroll_open ? `<button class="rr" data-reroll="${q.id}" title="swap this quest for another one (1 free per day)">↻ SWAP</button>` : LIVE() ? `<button class="rr" data-reroll="${q.id}" data-paid="1" title="swap for Embers">↻ ${fmt(price("extra_swap"))}</button>` : "") : "";
+  return `<div class="q ${q.done ? "done" : ""} ${q.claimed ? "claimed" : ""}" id="q-${q.id}-${q.period}">${rr}
+    <span class="kind">${label}${q.expires ? " · " + until(q.expires) : ""}</span><h3>${esc(q.title)}</h3><p>${esc(q.descr)}</p>
+    <div><div class="prog"><span>${progText(q)}</span><span>${q.claimed ? "claimed" : q.done ? "complete!" : "in progress"}</span></div><div class="pbar"><i style="width:${pct}%"></i></div></div>
+    <div class="rw">${chips(q.reward)}</div>
+    ${q.claimed ? '<button class="btn dark" disabled>CLAIMED ✓</button>' : q.done ? `<button class="btn lime" data-claim="${q.id}" data-period="${q.period}">CLAIM REWARD</button>` : '<a class="btn ghost" href="https://testnet.vibevibe.fun" target="_blank" rel="noopener">GO TRADE ↗</a>'}
+  </div>`;
+}
+
+async function renderWin() {
+  const wb = $("wb"), wt = $("wt"), m = ME;
+  if (current === "quests") {
+    wt.innerHTML = `QUEST BOARD<small>quests count trades made after you got them, worth 0.002 ETH or more</small>`;
+    const list = m.quests.filter(q => q.kind === questTab);
+    const st = m.story || { done: 0, total: 0 };
+    const chap = questTab === "story" ? `<div class="chap">${Array.from({ length: st.total }, (_, i) => `<i class="${i < st.done ? "on" : i === st.done ? "cur" : ""}"></i>`).join("")}</div>` : "";
+    const storyDone = questTab === "story" && st.total && st.done >= st.total && !list.some(q => !q.claimed);
+    const tabsK = ["daily", "weekly", "story", "hard", ...(m.quests.some(q => q.kind === "sponsored") ? ["sponsored"] : [])];
+    const hardLock = questTab === "hard" && !m.unlocks.hard_mode ? `<div class="econ"><h4>HARD MODE</h4><p class="note" style="margin:0 0 10px">3 tough weekly quests with 2-3x the XP and rare materials, for this week only.</p>
+      <button class="btn lime" data-buy="hard_mode" ${LIVE() ? "" : "disabled"}>UNLOCK THIS WEEK · ${fmt(price("hard_mode"))} EMBERS</button>${LIVE() ? "" : '<p class="note">opens when $VQUEST graduates</p>'}</div>` : "";
+    wb.innerHTML = `<div class="tabs">${tabsK.map(k => `<button data-qtab="${k}" class="${k === questTab ? "on" : ""}">${k.toUpperCase()} ${m.quests.filter(q => q.kind === k && q.done && !q.claimed).length ? "●" : ""}</button>`).join("")}</div>
+      ${chap}${hardLock}<div class="quests">${storyDone ? '<div class="empty">you finished the story. more chapters land with the next update</div>' : list.map(qcard).join("") || '<div class="empty">nothing here right now</div>'}</div>
+      ${questTab === "daily" ? `<p class="note">${m.reroll_open ? "don't like a daily? swap one for free, once a day" : LIVE() ? `free swap used. more swaps cost ${fmt(price("extra_swap"))} Embers each` : "you used today's free swap"}</p>` : questTab === "sponsored" ? '<p class="note">sponsored quests are paid for by the token\'s own builder. buy, hold, claim. this is not advice to buy anything</p>' : questTab === "story" ? '<p class="note">the story unlocks one chapter at a time. claim a chapter to open the next</p>' : ""}
+      <p class="note">${m.bonus ? `your gear adds +${m.bonus}% XP to every quest reward` : "forge gear to earn more XP from every quest"}</p>`;
+  } else if (current === "forge") {
+    wt.innerHTML = `FORGE<small>materials in, gear out. better gear = more XP from quests</small>`;
+    const r = Items.RECIPES[forgeSel.rarity], ek = Items.EMBER_KEY[forgeSel.rarity], eCost = ek && LIVE() ? price(ek) : 0;
+    const afford = Object.entries(r.cost).every(([k, n]) => (m.materials[k] || 0) >= n) && (!r.embersOnly || LIVE()) && m.embers >= eCost;
+    const slotOk = s => Items.BY(s, forgeSel.rarity).length > 0;
+    if (!slotOk(forgeSel.slot)) forgeSel.slot = Object.keys(Items.SLOTS).find(slotOk);
+    wb.innerHTML = `<div class="forge"><div>
+        <span class="k">1 · pick a tier</span>
+        <div class="tiers" style="margin-top:8px">${Object.entries(Items.RECIPES).map(([k, v]) => `<button class="tier ${k === forgeSel.rarity ? "on" : ""}" data-tier="${k}" style="--c:var(--${k})"><b>${k.toUpperCase()}</b><span>${Object.entries(v.cost).map(([mm, n]) => n + " " + mm).join(" + ")}</span><span>${Math.round(v.chance * 100)}% success</span>${Items.EMBER_KEY[k] ? `<span style="color:#ff9a3c">${LIVE() ? "+" + fmt(price(Items.EMBER_KEY[k])) + " embers" : v.embersOnly ? "locked" : "+embers later"}</span>` : ""}</button>`).join("")}</div>
+        <span class="k" style="display:block;margin-top:14px">2 · pick a slot</span>
+        <div class="slots">${Object.entries(Items.SLOTS).map(([k, v]) => `<button class="slotb ${k === forgeSel.slot ? "on" : ""}" data-slot="${k}" ${slotOk(k) ? "" : "disabled"}>${v.toUpperCase()}</button>`).join("")}</div>
+        <div class="cost"><span>${Object.entries(r.cost).map(([k, n]) => `<span class="chip" style="${(m.materials[k] || 0) < n ? "border-color:var(--dn)" : ""}">${gem(k)}${n} ${k} <span class="dim">(you have ${m.materials[k] || 0})</span></span>`).join(" ")}</span>
+          ${eCost ? `<span class="chip" style="${m.embers < eCost ? "border-color:var(--dn)" : ""}"><i class="ember"></i>${fmt(eCost)} embers <span class="dim">(you have ${fmt(m.embers)})</span></span>` : ""}
+          <button class="btn lime" id="doforge" ${afford ? "" : "disabled"}>⚒ FORGE</button></div>
+        <p class="note">fail = half the materials back${LIVE() ? ", Embers are used on every try" : ". Embers join the epic, legendary and mythic recipes when $VQUEST launches"}.</p>
+      </div>
+      <div class="anvil" id="anvil"><canvas id="anvilcv" width="160" height="160"></canvas><p class="note" id="anvilnote">possible ${forgeSel.rarity} ${Items.SLOTS[forgeSel.slot].toLowerCase()} gear: ${Items.BY(forgeSel.slot, forgeSel.rarity).map(t => t.name).join(", ")}</p></div>
+    </div>
+    <span class="k" style="display:block;margin-top:18px">your gear (${m.items.length})</span>
+    <div class="inv">${m.items.map(itCard).join("") || '<div class="empty">nothing forged yet</div>'}</div>`;
+    previewAnvil();
+  } else if (current === "hero") {
+    wt.innerHTML = `HERO<small>${short(m.wallet)}</small>`;
+    wb.innerHTML = `<div class="forge"><div class="anvil"><canvas id="herocv" width="160" height="160"></canvas><p class="k" style="margin-top:8px">${esc(m.cls)} · LEVEL ${m.level}</p><p class="note">${esc(m.line)}</p></div>
+      <div><span class="k">equipped</span>
+      <div class="inv" style="margin-top:8px">${Object.keys(Items.SLOTS).map(s => { const it = m.items.find(i => i.equipped && i.slot === s); return it ? itCard(it) : `<div class="it" style="--c:#2a2f36"><b class="dim">${Items.SLOTS[s]}</b><small>empty</small></div>`; }).join("")}</div>
+      <div class="cost" style="margin-top:14px"><span>gear bonus <b style="color:var(--lime)">+${m.bonus}% XP</b> (max +50%)</span><span class="dim mono">trading XP ${fmt(m.chain_xp)} · quest XP ${fmt(m.game_xp)}</span></div>
+      ${m.badges && m.badges.length ? `<div class="badges">${m.badges.map(b => `<span class="bdg" title="${b.week}">★ ${BADGE(b)} · ${b.week.slice(5)}</span>`).join("")}</div>` : ""}
+      <div class="cost"><span class="dim">trading stats</span><span class="mono">${m.stats.buys} buys · ${m.stats.tokens} tokens · ${m.stats.early} early · ${m.stats.grads} grads · ${m.stats.launched} launches</span></div>
+      <div class="share"><a class="btn lime" href="https://x.com/intent/tweet?text=${encodeURIComponent(`my vibe/vibe wallet is a level ${m.level} ${m.cls} on viberquest`)}&url=${encodeURIComponent(location.origin + "/h/" + m.wallet)}" target="_blank" rel="noopener">SHARE ON X</a><button class="btn ghost" id="copyhero">COPY LINK</button><a class="btn ghost" href="https://vibercheck.xyz/v/${m.wallet}" target="_blank" rel="noopener">VIBERCHECK ↗</a></div></div></div>
+      <img class="cardimg" src="/hcard/${m.wallet}.png?v=${encodeURIComponent(JSON.stringify(m.gear)).length}${m.level}" alt="your hero card" loading="lazy">`;
+    animateCanvas("herocv", (c, t) => portrait(c, m.wallet, m.cls, m.level, m.gear, t));
+  } else if (current === "guild") {
+    wt.innerHTML = `GUILD HALL<small>weekly season · guilds ranked by their players' quest XP</small>`;
+    wb.innerHTML = `<div class="empty">reading the season…</div>`;
+    const g = await api("guild").catch(() => null); if (current !== "guild") return;
+    if (!g || !g.ok) { wb.innerHTML = '<div class="empty">could not read the season, try again</div>'; return; }
+    const goal = m.goal, maxEth = goal ? goal.levels[goal.levels.length - 1].eth : 1;
+    const goalHtml = goal ? `<div class="goal"><span class="k">guild goal this week · combined volume of ${goal.members} visible members</span>
+        <div class="gbar"><i style="width:${Math.min(100, goal.volume / maxEth * 100)}%"></i>${goal.levels.map(l => `<span class="gm ${l.reached ? "on" : ""}" style="left:${l.eth / maxEth * 100}%">${fmt(l.eth)} ETH</span>`).join("")}</div>
+        <div class="mono dim" style="font-size:12px">${fmt(goal.volume, 1)} ETH so far${goal.updated ? " · updates every 5 min" : " · first count lands within 5 min"}</div>
+        <div class="gchests">${goal.levels.map(l => `<div class="gchest ${l.reached ? "on" : ""}"><b style="color:${l.reached ? "var(--gold)" : "var(--g2)"}">CHEST ${l.level}</b><span class="rw" style="justify-content:center">${Object.entries(l.mat).map(([k, n]) => `<span class="chip">${gem(k)}${n}</span>`).join("")}</span>
+          ${l.claimed ? '<button class="btn dark" disabled>OPENED ✓</button>' : l.reached ? `<button class="btn lime" data-gchest="${l.level}">OPEN</button>` : `<button class="btn ghost" disabled>${fmt(l.eth)} ETH</button>`}</div>`).join("")}</div></div>` : "";
+    wb.innerHTML = `<div class="cost" style="margin-top:0"><span>${g.mine ? `your guild: <b style="color:var(--lime)">${esc(g.mine.name || g.mine.slug)}</b>${tierB(g.mine.tier)}${g.mine.moved ? ` <span class="chip">${g.mine.moved === "up" ? "▲ promoted" : "▼ relegated"} last week</span>` : ""}` : `you're not in a listed vibe/vibe guild yet. <a style="color:var(--lime)" href="https://testnet.vibevibe.fun/guilds" target="_blank" rel="noopener">join one ↗</a> and turn on "show me in the member list"`}</span><span class="dim mono">season ${g.week} · ${until(g.ends)}</span></div>
+      ${goalHtml}${g.mine ? baseHtml() : ""}
+      <table style="margin-top:12px"><thead><tr><th>#</th><th>GUILD</th><th>PLAYERS</th><th>POINTS</th></tr></thead><tbody>
+      ${g.guilds.map(x => `<tr class="${g.mine && g.mine.slug === x.slug ? "me" : ""}"><td>${x.rank}</td><td><a href="https://vibercheck.xyz/g/${esc(x.slug)}" target="_blank" rel="noopener">${esc(x.name || x.slug)}</a>${tierB(x.tier)}</td><td>${x.players}</td><td style="color:var(--lime)">${fmt(x.points)}${x.raw > x.points ? ` <span class="dim" title="capped">/${fmt(x.raw)}</span>` : ""}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">no guild has scored this week yet. be the first</td></tr>'}
+      </tbody></table><p class="note">every quest XP a member claims adds to their guild, up to ${fmt(g.cap)} per member a week so one whale can't carry a guild. leagues: bronze, silver, gold, diamond. each Monday the top 20% of a league move up and the bottom 20% move down.</p>`;
+  } else if (current === "arena") {
+    wt.innerHTML = `ARENA<small>fantasy launchpad league · pick 5 tokens, they score what happens after you pick</small>`;
+    wb.innerHTML = `<div id="fanhead"><div class="empty">opening the gates…</div></div><div class="roster" id="roster"></div>
+      <span class="k" style="display:block;margin-top:18px">add a token <span class="dim" id="tlabel">· hot right now</span></span>
+      <input class="srch" id="tq" placeholder="search a symbol, name or contract" autocomplete="off" style="margin-top:8px"><div class="tres" id="tres"></div>
+      <span class="k" style="display:block;margin-top:18px">league table</span><div id="ftable"></div>
+      <p class="note">scoring per token: <b>+100</b> if it graduates · <b>+1</b> per new buyer (max 300) · <b>+5</b> per ETH of volume (max 500) · <b>−1</b> per wallet that turns net seller (max −300). <b>−200</b> if the creator dumps. captain counts 1.5x. at most 3 tokens that haven't graduated yet. your own launches can't be picked. drops and captain changes are open until Tuesday 00:00 UTC, empty slots can be filled all week. resets Monday 00:00 UTC.</p>`;
+    const f = await api("fantasy").catch(() => null); if (current !== "arena") return;
+    if (!f || !f.ok) { $("fanhead").innerHTML = '<div class="empty">could not open the arena, try again</div>'; return; }
+    FAN = f; renderArena(); searchTokens("");
+  } else if (current === "player") {
+    const o = OTHERS.get(viewing) || {};
+    wt.innerHTML = `PLAYER<small>${short(viewing)}</small>`; wb.innerHTML = `<div class="empty">reading the hero…</div>`;
+    const h = await api("hero/" + viewing).catch(() => null); if (current !== "player") return;
+    if (!h || !h.ok) { wb.innerHTML = '<div class="empty">could not read this hero</div>'; return; }
+    wb.innerHTML = `<div class="forge"><div class="anvil"><canvas id="pcv" width="160" height="160"></canvas><p class="k" style="margin-top:8px">${esc(h.cls)} · LEVEL ${h.level}</p><p class="note">${esc(h.line)}</p></div>
+      <div><span class="k">equipped</span><div class="inv" style="margin-top:8px">${h.items.map(i => itCard({ ...i, equipped: true, id: 0 }).replace(/<button[^]*?<\/button>/, "")).join("") || '<div class="empty">no gear yet</div>'}</div>
+      ${h.badges && h.badges.length ? `<div class="badges">${h.badges.map(b => `<span class="bdg">★ ${BADGE(b)} · ${b.week.slice(5)}</span>`).join("")}</div>` : ""}
+      <div class="cost"><span class="dim">this week</span><span class="mono">${fmt(h.week_xp)} quest XP${o.guild ? " · " + esc(o.guild) : ""}</span></div>
+      <div class="cost"><span class="dim">trading</span><span class="mono">${h.stats.buys} buys · ${h.stats.tokens} tokens · ${h.stats.early} early · ${h.stats.grads} grads</span></div>
+      <div class="share"><a class="btn ghost" href="/h/${h.wallet}" target="_blank" rel="noopener">HERO PAGE ↗</a><a class="btn ghost" href="https://vibercheck.xyz/v/${h.wallet}" target="_blank" rel="noopener">VIBERCHECK ↗</a></div></div></div>`;
+    animateCanvas("pcv", (c, t) => portrait(c, h.wallet, h.cls, h.level, h.gear, t)); drawItemIcons();
+  } else if (current === "fame") {
+    wt.innerHTML = `HALL OF FAME<small>${fameTab === "now" ? "this week's top questers" : "last week's champions"}</small>`;
+    const tabs = `<div class="tabs"><button data-ftab="now" class="${fameTab === "now" ? "on" : ""}">THIS WEEK</button><button data-ftab="past" class="${fameTab === "past" ? "on" : ""}">PAST SEASONS</button></div>`;
+    wb.innerHTML = tabs + `<div class="empty">reading the board…</div>`;
+    if (fameTab === "now") {
+      const r = await api("leaderboard").catch(() => null); if (current !== "fame") return;
+      const rows = (r && r.rows) || [];
+      wb.innerHTML = tabs + `<table><thead><tr><th>#</th><th>PLAYER</th><th>GUILD</th><th>XP THIS WEEK</th></tr></thead><tbody>
+        ${rows.map((x, i) => `<tr class="${x.wallet === m.wallet ? "me" : ""}"><td>${i + 1}</td><td><div class="who"><canvas width="40" height="40" data-port="${x.wallet}" data-gear='${esc(JSON.stringify(x.gear || {}))}'></canvas><a href="/h/${x.wallet}" target="_blank">${short(x.wallet)}</a></div></td><td>${esc(x.guild || "–")}</td><td style="color:var(--lime)">${fmt(x.week_xp)}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">nobody has scored this week yet</td></tr>'}
+        </tbody></table><p class="note">at the end of each week the top 3 questers, the top 3 of the Arena and every player of the #1 guild earn a badge that stays on their hero card.</p>`;
+    } else {
+      const r = await api("seasons" + (fameWeek ? "?week=" + fameWeek : "")).catch(() => null); if (current !== "fame") return;
+      if (!r || !r.ok || !r.week) { wb.innerHTML = tabs + '<div class="empty">no finished season yet. the first one closes Monday 00:00 UTC</div>'; return; }
+      const who = x => `<div class="who"><canvas width="40" height="40" data-port="${x.ref}" data-gear='${esc(JSON.stringify(x.gear || {}))}'></canvas><a href="/h/${x.ref}" target="_blank">${short(x.ref)}</a></div>`;
+      const board = (title, rows, cell) => `<div class="board"><h4>${title}</h4><table><tbody>${rows.map(x => `<tr class="${x.ref === m.wallet ? "me" : ""}"><td>${x.rank === 1 ? "🥇" : x.rank === 2 ? "🥈" : x.rank === 3 ? "🥉" : x.rank}</td><td>${cell(x)}</td><td style="color:var(--lime)">${fmt(x.points)}</td></tr>`).join("") || '<tr><td class="empty">nobody</td></tr>'}</tbody></table></div>`;
+      wb.innerHTML = tabs + `<div class="tabs">${r.weeks.map(w => `<button data-fweek="${w}" class="${w === r.week ? "on" : ""}">${w}</button>`).join("")}</div>
+        <div class="boards">${board("QUESTERS", r.boards.player, who)}${board("ARENA", r.boards.arena, who)}${board("GUILDS", r.boards.guild, x => `${esc(x.name || x.ref)}${x.extra && x.extra.moved ? (x.extra.moved === "up" ? " ▲" : " ▼") : ""}`)}</div>`;
+    }
+    wb.querySelectorAll("canvas[data-port]").forEach(c => portrait(c, c.dataset.port, "Fresh", 10, JSON.parse(c.dataset.gear), 0));
+  } else if (current === "chest") {
+    wt.innerHTML = `DAILY CHEST<small>one free chest every day (00:00 UTC)</small>`;
+    wb.innerHTML = m.chest_open
+      ? `<div class="reveal"><canvas id="chestcv" width="200" height="200"></canvas><h4>A CHEST IS WAITING</h4><p>copper for sure, maybe silver, rarely gold. for wallets that traded on vibe/vibe this week.</p><button class="btn lime" id="openchest">OPEN IT</button></div>`
+      : `<div class="reveal"><canvas id="chestcv" width="200" height="200"></canvas><h4>ALREADY OPENED TODAY</h4><p>a new chest arrives at 00:00 UTC (${until(nextUtcMidnight())}).</p></div>`;
+    drawChestBig(m.chest_open ? 0 : 1);
+  } else if (current === "furnace") {
+    wt.innerHTML = `FURNACE<small>burn VQUEST, get Embers to spend in the game</small>`;
+    if (!LIVE() && m.economy.launched) { const ec = m.economy, pct = Math.max(2, Math.min(100, ec.curve_eth / ec.grad_eth * 100));
+      wb.innerHTML = `<div class="reveal" style="align-items:flex-start;text-align:left"><h4 style="color:#ff7a1a">THE FURNACE LIGHTS UP AT GRADUATION</h4>
+      <p>$VQUEST is live on vibe/vibe. Until it graduates, vibe/vibe tokens can only be bought and sold on their curve, they can't be sent anywhere, so they can't be burned yet. The moment it graduates the Furnace lights up and Embers switch on.</p>
+      <div class="econ" style="width:100%"><h4>ROAD TO GRADUATION</h4><div class="gbar" style="margin:6px 0 8px"><i style="width:${pct}%"></i></div><p class="note" style="margin:0">${fmt(ec.curve_eth, 3)} of ~${ec.grad_eth} ETH in the curve</p></div>
+      <p>Embers will pay for mythic gear, hard-mode quests, extra swaps, a 6th Arena pick, guild bases, name colours, emote packs and sponsored quests. The game never holds your tokens.</p>
+      <a class="btn lime" href="https://testnet.vibevibe.fun" target="_blank" rel="noopener">$VQUEST ON VIBE/VIBE ↗</a>
+      <p class="dim">testnet alpha: nothing here has monetary value. not advice to buy anything.</p></div>`; return; }
+    if (!LIVE()) { wb.innerHTML = `<div class="reveal" style="align-items:flex-start;text-align:left"><h4 style="color:#ff7a1a">THE FURNACE IS COLD, FOR NOW</h4>
+      <p>When $VQUEST launches on vibe/vibe you'll throw it in here. Every token you burn is gone for good (sent to the 0x…dEaD address from your own wallet) and you get the same amount of <b>Embers</b>.</p>
+      <p>Embers pay for mythic gear, hard-mode quests, extra swaps, a 6th Arena pick, guild bases, name colours, emote packs and sponsored quests. The game never holds your tokens.</p>
+      <p class="dim">testnet alpha: nothing here has monetary value.</p></div>`; return; }
+    wb.innerHTML = `<div class="row2"><div class="econ"><h4>YOUR EMBERS</h4><div class="big">${fmt(m.embers)}<small>EMBERS</small></div>
+        <p class="note">in your wallet: <b id="vqbal">…</b> VQUEST</p></div>
+      <div class="econ"><h4>BURN VQUEST</h4><div class="amt">${[price("extra_swap"), price("forge_epic"), price("forge_mythic"), 5 * price("forge_mythic")].filter(Boolean).map(n => `<button data-amt="${n}">${n >= 1e6 ? fmt(n / 1e6, 1) + "M" : fmt(n / 1e3) + "K"}</button>`).join("")}<button data-amt="max">MAX</button></div>
+        <input class="srch sm" id="burnamt" inputmode="decimal" placeholder="amount of VQUEST to burn">
+        <button class="btn lime" id="doburn" style="margin-top:10px;width:100%">🔥 BURN FOR EMBERS</button>
+        <p class="note" id="burnmsg">your wallet asks you to confirm a token transfer to 0x…dEaD. Embers land within a few seconds after it confirms.</p></div></div>
+      <div class="econ"><h4>WHAT EMBERS BUY</h4><div class="list">${[["forge_mythic", "mythic forge (plus 2 diamonds)"], ["forge_legendary", "legendary forge, extra"], ["forge_epic", "epic forge, extra"], ["hard_mode", "hard-mode quests, this week"], ["extra_swap", "another daily swap"], ["arena_slot6", "6th Arena pick, this week"], ["name_color", "name colour (Tailor)"], ["emote_pack", "emote pack (Tailor)"], ["guild_l1", "guild base level 1 (pooled)"], ["sponsor_slot", "24h sponsored quest (builders)"]].map(([k, d]) => `<div><span>${d}</span><span class="price"><b>${fmt(price(k))}</b></span></div>`).join("")}</div></div>`;
+    api("vqbalance").then(r => { if ($("vqbal")) $("vqbal").textContent = r && r.ok ? fmt(r.balance, 2) : "?"; if (r && r.ok) $("vqbal").dataset.max = r.balance; }).catch(() => { });
+  } else if (current === "tailor") {
+    wt.innerHTML = `TAILOR<small>look good on the plaza</small>`;
+    const u = m.unlocks;
+    wb.innerHTML = `<div class="econ ${LIVE() ? "" : "lock"}"><h4>NAME COLOUR</h4><p class="note" style="margin:0">${u.name_color ? "change it any time for free" : `one colour unlock for ${emb(price("name_color"))}, then switch freely`}</p>
+        <div class="swatches">${m.economy.colors.map(c => `<button class="sw ${u.name_color === c ? "on" : ""}" style="background:${c}" data-color="${c}" ${LIVE() ? "" : "disabled"}></button>`).join("")}</div></div>
+      <div class="econ ${LIVE() ? "" : "lock"}"><h4>EMOTE PACK</h4><p class="note" style="margin:0">WAGMI, NGMI, 💎, 🐸, 🙏, 💀 on your emote bar</p>
+        ${u.emote_pack ? '<button class="btn dark" style="margin-top:10px" disabled>OWNED ✓</button>' : `<button class="btn lime" style="margin-top:10px" data-buy="emote_pack" ${LIVE() ? "" : "disabled"}>BUY · ${fmt(price("emote_pack"))} EMBERS</button>`}</div>
+      ${LIVE() ? "" : '<p class="note">the Tailor opens when $VQUEST graduates</p>'}`;
+  } else if (current === "billboard") {
+    wt.innerHTML = `SPONSORED QUESTS<small>builders put their own token on the board</small>`;
+    wb.innerHTML = `<div class="empty">reading the board…</div>`;
+    const r = await api("sponsor").catch(() => null); if (current !== "billboard") return;
+    if (!r || !r.ok) { wb.innerHTML = '<div class="empty">could not read the board</div>'; return; }
+    const live = r.upcoming.filter(x => Date.parse(x.starts_at) <= Date.now()), next = r.upcoming.filter(x => Date.parse(x.starts_at) > Date.now());
+    wb.innerHTML = `<div class="econ"><h4>ON THE BOARD NOW</h4>${live.length ? live.map(x => `<div class="cost" style="margin-top:6px"><span><b>${esc(x.title)}</b> <span class="dim">hold ${x.hold_hours}h</span></span><span class="dim mono">${until(x.ends_at)}</span></div>`).join("") : '<p class="note" style="margin:0">no sponsored quest right now</p>'}
+        ${next.length ? `<p class="note">next: ${next.map(x => "$" + esc(x.symbol) + " in " + until(x.starts_at).replace(" left", "")).join(", ")}</p>` : ""}</div>
+      <div class="econ ${r.live ? "" : "lock"}"><h4>SPONSOR YOUR TOKEN</h4>
+        <p class="note" style="margin:0 0 10px">for builders: every Viberquest player gets a 24h quest to buy your token and hold it. two slots at a time. you get the list of wallets that completed it. price: ${emb(r.price)}.</p>
+        ${r.my_tokens.length ? `<div class="row2"><select class="srch sm" id="sptoken">${r.my_tokens.map(t => `<option value="${t.curve}">$${esc(t.symbol)} · ${esc(t.name || "")}</option>`).join("")}</select>
+          <select class="srch sm" id="sphours">${[6, 12, 24, 48].map(h => `<option value="${h}">hold for ${h} hours</option>`).join("")}</select></div>
+          <button class="btn lime" id="dosponsor" style="margin-top:10px" ${r.live ? "" : "disabled"}>BOOK A SLOT · ${fmt(r.price)} EMBERS</button>` : '<p class="note">you haven\'t launched a token on vibe/vibe from this wallet yet</p>'}
+        ${r.live ? "" : '<p class="note">opens when $VQUEST graduates</p>'}</div>
+      ${r.mine.length ? `<div class="econ"><h4>YOUR SPONSORSHIPS</h4>${r.mine.map(x => `<div class="cost" style="margin-top:6px"><span><b>$${esc(x.symbol)}</b> <span class="dim">${new Date(x.starts_at).toISOString().slice(0, 16).replace("T", " ")} UTC</span></span><span class="mono">${x.takers} took · ${x.completers} completed · <a href="/api/sponsor/${x.id}/completers" style="color:var(--lime)">CSV</a></span></div>`).join("")}</div>` : ""}`;
+  } else if (current === "treasury" && m.economy && m.economy.launched) {
+    wt.innerHTML = `TREASURY<small>everything here is read from the chain</small>`; wb.innerHTML = `<div class="empty">reading the chain…</div>`;
+    const r = await api("treasury").catch(() => null); if (current !== "treasury") return;
+    if (!r || !r.ok) { wb.innerHTML = '<div class="empty">could not read the treasury</div>'; return; }
+    const day = ts => new Date(ts * 1000).toISOString().slice(5, 16).replace("T", " ");
+    wb.innerHTML = `<div class="row2"><div class="econ"><h4>TREASURY WALLET</h4><div class="big">${r.balances && r.balances.vquest != null ? fmt(r.balances.vquest, 0) : "?"}<small>${esc(r.symbol)}</small></div>
+          <p class="note" style="margin:6px 0 0">${r.balances && r.balances.eth != null ? fmt(r.balances.eth, 4) + " ETH · " : ""}<span class="mono">${r.treasury ? short(r.treasury) : "not set yet"}</span></p></div>
+        <div class="econ"><h4>BURNED IN THE FURNACE</h4><div class="big">${fmt(r.burned.total, 0)}<small>${esc(r.symbol)}</small></div><p class="note" style="margin:6px 0 0">${r.burned.burns} burns by ${r.burned.wallets} wallets · ${fmt(r.embers_spent, 0)} Embers spent</p></div></div>
+      ${r.plan ? `<div class="econ"><h4>REWARDS FOR SEASON ${r.plan.week}</h4><p class="note" style="margin:0 0 8px">pool = ${fmt(r.plan.pool, 2)} ${esc(r.symbol)} bought back by the treasury that week · 45% guilds, 35% Arena, 20% questers and a raffle · ${r.plan.eligible} eligible players (5+ quests that week) · max 10% of the pool per wallet</p>
+        <div class="list">${r.plan.rows.map(x => `<div><span>${short(x.wallet)} <span class="dim">${esc(x.why.join(", "))}</span></span><span>${fmt(x.amount, 2)} ${x.paid ? '<b style="color:var(--up)">paid ✓</b>' : '<span class="dim">pending</span>'}</span></div>`).join("") || "<div><span>nobody qualified</span></div>"}</div></div>` : ""}
+      <div class="row2"><div class="econ"><h4>BUYBACKS</h4><div class="list">${r.buybacks.map(x => `<div><span>${day(x.ts)}</span><span>${fmt(x.tokens, 0)} for ${fmt(x.eth, 4)} ETH</span></div>`).join("") || "<div><span>none yet</span></div>"}</div></div>
+        <div class="econ"><h4>PAYOUTS</h4><div class="list">${r.payouts.map(x => `<div><span>${day(x.ts)} → ${short(x.to)}</span><span>${fmt(x.amount, 2)}</span></div>`).join("") || "<div><span>none yet</span></div>"}</div></div></div>
+      <p class="note">rewards only come from the token's own trading fees, bought back on the market. players' burns are destroyed, never paid out. testnet: nothing here has monetary value.</p>`;
+  } else if (current === "treasury") {
+    wt.innerHTML = `TREASURY<small>coming with the $VQUEST launch</small>`;
+    wb.innerHTML = `<div class="reveal" style="align-items:flex-start;text-align:left">
+      <h4 style="color:var(--gold)">THE VAULT IS LOCKED, FOR NOW</h4>
+      <p>$VQUEST will be launched on vibe/vibe. It's the game's currency: you'll spend it to forge higher tiers, unlock hard-mode quests and upgrade your guild base, and most of what's spent gets burned.</p>
+      <p>Season rewards come from the token's own fee treasury, bought back on the market every week, never from players' entry fees. Every payout will be listed here, read straight from the chain.</p>
+      <p class="dim">testnet alpha: nothing here has monetary value.</p></div>`;
+  }
+}
+function baseHtml() {
+  const b = ME.guild_base || { embers: 0, level: 0 }, lv = ["guild_l1", "guild_l2", "guild_l3"], nextK = lv[b.level], nextAt = nextK ? price(nextK) : null;
+  return `<div class="econ ${LIVE() ? "" : "lock"}"><h4>GUILD BASE · LEVEL ${b.level}${b.level ? ` · +${b.level * 2}% XP FOR EVERY MEMBER` : ""}</h4>
+    <div class="gbar" style="margin:8px 0"><i style="width:${nextAt ? Math.min(100, b.embers / nextAt * 100) : 100}%"></i></div>
+    <p class="note" style="margin:0">${fmt(b.embers)} Embers pooled${nextAt ? ` · level ${b.level + 1} at ${fmt(nextAt)}` : " · max level"}</p>
+    <div style="display:flex;gap:8px;margin-top:10px"><input class="srch sm" id="baseamt" inputmode="numeric" placeholder="Embers to add" style="max-width:200px"><button class="btn lime" id="dobase" ${LIVE() ? "" : "disabled"}>ADD</button></div>
+    ${LIVE() ? "" : '<p class="note">guild bases open when $VQUEST graduates</p>'}</div>`;
+}
+function renderArena() {
+  const f = FAN, m = ME; if (!f || current !== "arena") return;
+  const mine = f.table.find(r => r.wallet === m.wallet);
+  $("fanhead").innerHTML = `<div class="cost" style="margin-top:0"><span>your points <b style="color:var(--lime);font-family:var(--pixel);font-size:16px;margin:0 6px">${fmt(f.points)}</b>${mine ? `<span class="chip">rank #${mine.rank}</span>` : ""}</span><span class="dim mono">week ${f.week} · ${until(f.ends)} · ${f.locked ? "roster locked, empty slots can still be filled" : "swaps lock in " + until(f.lock_at).replace(" left", "")}</span></div>`;
+  const parts = s => s ? `${s.grad ? "graduated +100<br>" : ""}buyers +${s.buyers}<br>volume +${s.volume}${s.sellers ? `<br>sellers ${s.sellers}` : ""}${s.rug ? `<br><span style="color:var(--dn)">creator dumped ${s.rug}</span>` : ""}` : "scoring starts<br>in a minute or two";
+  if (f.max < 6 && LIVE()) $("fanhead").insertAdjacentHTML("beforeend", `<button class="btn ghost" style="margin-top:8px" data-buy="arena_slot6">+ 6TH SLOT THIS WEEK · ${fmt(price("arena_slot6"))} EMBERS</button>`);
+  $("roster").style.gridTemplateColumns = `repeat(${f.max},1fr)`;
+  $("roster").innerHTML = Array.from({ length: f.max }, (_, i) => {
+    const p = f.picks[i]; if (!p) return `<div class="pick emptyp">EMPTY SLOT<br><span style="color:var(--g2)">pick below</span></div>`;
+    return `<div class="pick ${p.captain ? "cap" : ""}">${p.captain ? '<span class="capb">CAPTAIN x1.5</span>' : ""}
+      <h4>$${esc(p.symbol || "?")}${p.graduated ? '<span class="badge">GRAD</span>' : ""}</h4><span class="nm">${esc(p.name || p.curve)}</span>
+      <div class="parts">${parts(p.score)}</div><div class="pts">${fmt(p.score ? p.score.points : 0)}</div>
+      ${f.locked ? "" : `<div class="row">${p.captain ? "" : `<button class="btn ghost" data-cap="${p.curve}">★ CAPT</button>`}<button class="btn ghost" data-drop="${p.curve}">DROP</button></div>`}</div>`;
+  }).join("");
+  $("ftable").innerHTML = `<table><thead><tr><th>#</th><th>PLAYER</th><th>PICKS</th><th>POINTS</th></tr></thead><tbody>${f.table.map(r => `<tr class="${r.wallet === m.wallet ? "me" : ""}"><td>${r.rank}</td><td><div class="who"><canvas width="40" height="40" data-port="${r.wallet}" data-gear='${esc(JSON.stringify(r.gear || {}))}'></canvas>${short(r.wallet)}</div></td><td>${r.picks}</td><td style="color:var(--lime)">${fmt(r.points)}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">nobody has scored yet this week. pick early, picks only score what happens after</td></tr>'}</tbody></table>`;
+  $("ftable").querySelectorAll("canvas[data-port]").forEach(c => portrait(c, c.dataset.port, "Fresh", 10, JSON.parse(c.dataset.gear), 0));
+  markPicked();
+}
+let tokTimer = null, tokSeq = 0;
+async function searchTokens(q) {
+  const seq = ++tokSeq, r = await api("tokens?q=" + encodeURIComponent(q)).catch(() => null);
+  if (seq !== tokSeq || current !== "arena" || !$("tres")) return;
+  $("tlabel").textContent = q ? `· results for "${q}"` : "· hot right now";
+  const rows = (r && r.rows) || [];
+  $("tres").innerHTML = rows.map(t => `<div class="tok"><div><b>$${esc(t.symbol)}${t.graduated ? '<span class="badge">GRAD</span>' : ""}</b><small>${esc(t.name || "")} · ${fmt(t.trades_24h)} trades 24h</small></div><button class="btn lime" data-pick="${t.curve}" data-creator="${t.creator}">PICK</button></div>`).join("") || '<div class="empty">no token found</div>';
+  markPicked();
+}
+function markPicked() {
+  if (!FAN || !$("tres")) return;
+  const full = FAN.picks.length >= FAN.max;
+  $("tres").querySelectorAll("[data-pick]").forEach(b => {
+    const have = FAN.picks.some(p => p.curve === b.dataset.pick), own = ME && b.dataset.creator === ME.wallet;
+    b.disabled = have || full || own; b.textContent = have ? "PICKED" : own ? "YOURS" : full ? "FULL" : "PICK";
+  });
+}
+document.addEventListener("input", e => { if (e.target.id === "tq") { clearTimeout(tokTimer); tokTimer = setTimeout(() => searchTokens(e.target.value.trim()), 280); } });
+const FERR = { max_live: "at most 3 tokens that haven't graduated yet", locked: "the roster is locked after Monday, you can only fill empty slots", own_token: "you can't pick a token you launched", roster_full: "your roster is full, drop one first", already_picked: "already in your roster", bad_token: "that token isn't on vibe/vibe" };
+async function fantasyDo(body, okMsg) {
+  const r = await api("fantasy", body).catch(() => null);
+  if (!r || !r.ok) { sfx.fail(); return toast(FERR[r && r.error] || "could not update your roster"); }
+  FAN = r; sfx.coin(); if (okMsg) toast(okMsg); renderArena();
+}
+function itCard(it) {
+  return `<div class="it ${it.equipped ? "eq" : ""}" style="--c:var(--${it.rarity})"><canvas width="40" height="40" data-item='${esc(JSON.stringify({ slot: it.slot, template: it.template }))}'></canvas>
+    <b>${esc(it.name)}</b><small>${it.rarity.toUpperCase()} ${Items.SLOTS[it.slot].toUpperCase()} · +${it.power} power</small>
+    ${it.equipped ? `<button class="btn dark" data-unequip="${it.slot}">UNEQUIP</button>` : `<button class="btn ghost" data-equip="${it.id}">EQUIP</button><button class="btn ghost" style="color:var(--g2)" data-salvage="${it.id}" data-get="${esc(SALV[it.rarity])}">SALVAGE</button>`}</div>`;
+}
+const SALV = { common: "+2 copper", rare: "+2 silver", epic: "+1 gold +1 silver", legendary: "+1 diamond" };
+function drawItemIcons() { document.querySelectorAll("canvas[data-item]").forEach(c => itemIcon(c, JSON.parse(c.dataset.item), performance.now())); }
+const LIVE = () => !!(ME && ME.economy && ME.economy.live);
+const price = k => (ME && ME.economy && ME.economy.prices[k]) || 0;
+const emb = n => `<i class="ember"></i> <b>${fmt(n)}</b> embers`;
+const ERRS = { economy_off: "Embers open when $VQUEST graduates on vibe/vibe", not_enough_embers: "not enough Embers, burn VQUEST at the Furnace", owned: "you already have it", not_creator: "you can only sponsor a token you launched", no_guild: "join a vibe/vibe guild first", bad_amount: "pick an amount of at least 10" };
+const errText = r => ERRS[r && r.error] || "something went wrong, try again";
+const nextUtcMidnight = () => { const d = new Date(); d.setUTCHours(24, 0, 0, 0); return d.toISOString(); };
+const anims = new Map();
+function animateCanvas(id, draw) {
+  const c = $(id); if (!c) return;
+  const loop = now => { if (!document.body.contains(c)) return; draw(c, now); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+function previewAnvil() {
+  const pool = Items.BY(forgeSel.slot, forgeSel.rarity); let i = 0, last = 0;
+  animateCanvas("anvilcv", (c, now) => {
+    if (now - last > 900) { i = (i + 1) % Math.max(1, pool.length); last = now; }
+    const g = c.getContext("2d"); g.clearRect(0, 0, c.width, c.height);
+    if (!pool.length) return;
+    g.globalAlpha = .35 + Math.sin(now / 300) * .15; itemIcon(c, { slot: pool[i].slot, template: pool[i].id }, now); g.globalAlpha = 1;
+  });
+  drawItemIcons();
+}
+function drawChestBig(opened, glow) {
+  const c = $("chestcv"); if (!c) return; const g = c.getContext("2d"), s = 8; g.clearRect(0, 0, c.width, c.height);
+  if (glow) { const gr = g.createRadialGradient(100, 100, 10, 100, 100, 100); gr.addColorStop(0, "rgba(255,210,63,.7)"); gr.addColorStop(1, "rgba(255,210,63,0)"); g.fillStyle = gr; g.fillRect(0, 0, 200, 200); }
+  const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(28 + x * s, 40 + y * s, w * s, h * s); };
+  R(0, 6, 18, 10, "#a0612b"); R(0, 6, 18, 2, "#c47a36"); R(0, 10, 18, 1, "#5a3a1a"); R(7, 9, 4, 4, "#ffd23f");
+  if (opened) { R(0, 1, 18, 4, "#7a4a22"); R(0, 0, 18, 1, "#c47a36"); } else { R(0, 3, 18, 4, "#b86e30"); R(0, 3, 18, 1, "#d88a46"); }
+}
+
+async function openChest() {
+  const b = $("openchest"); if (b) b.disabled = true;
+  for (let i = 0; i < 6; i++) { const c = $("chestcv"); if (c) c.style.transform = `rotate(${i % 2 ? 4 : -4}deg)`; sfx.hammer(); await new Promise(r => setTimeout(r, 110)); }
+  const c = $("chestcv"); if (c) c.style.transform = "";
+  const r = await api("chest", {}).catch(() => null);
+  if (!r || !r.ok) { toast(r && r.error === "opened_today" ? "already opened today" : r && r.error === "trade_first" ? "the chest opens for wallets that traded on vibe/vibe in the last 7 days" : "could not open, try again", 4000); await load(); renderWin(); return; }
+  drawChestBig(1, true); sfx.win(); confetti(90, ["#ffd23f", "#d9844a", "#c9d2d8"]);
+  const got = Object.entries(r.mat).map(([k, n]) => `+${n} ${k}`).join(" · ");
+  toast(`chest: ${got} · +${r.xp} XP`, 3500); floatText(got, "#ffd23f");
+  await load(); setTimeout(() => current === "chest" && renderWin(), 1600);
+}
+
+async function doForge() {
+  const btn = $("doforge"); if (btn) btn.disabled = true;
+  const cvA = $("anvilcv");
+  for (let i = 0; i < 5; i++) { sfx.hammer(); if (cvA) cvA.style.transform = `translateY(${i % 2 ? 4 : 0}px)`; for (let k = 0; k < 6; k++) sparks.push({ x: FORGE_ANVIL.x, y: FORGE_ANVIL.y - 9, vx: (Math.random() - .5) * 2, vy: -1.5 - Math.random(), life: 1, c: "#ffd23f" }); await new Promise(r => setTimeout(r, 160)); }
+  if (cvA) cvA.style.transform = "";
+  const r = await api("craft", forgeSel).catch(() => null);
+  if (!r || !r.ok) { sfx.fail(); toast(r && r.error === "not_enough" ? "not enough materials" : r && r.error ? errText(r) : "the forge refused, try again"); await load(); renderWin(); return; }
+  await load();
+  if (!r.success) { sfx.fail(); banner("CRACKED!", "the forge failed. half your materials came back"); renderWin(); return; }
+  sfx.win(); confetti(140, [Items.RARITY[r.item.rarity].color, "#dff902", "#ffffff"]);
+  banner(r.item.rarity.toUpperCase() + "!", r.item.name);
+  $("wb").innerHTML = `<div class="reveal"><canvas id="revealcv" width="200" height="200"></canvas><h4 style="color:var(--${r.item.rarity})">${esc(r.item.name)}</h4><p>${r.item.rarity} ${Items.SLOTS[r.item.slot].toLowerCase()} · +${r.item.power} power</p>
+    <div style="display:flex;gap:8px"><button class="btn lime" data-equip="${r.item.id}">EQUIP NOW</button><button class="btn ghost" id="backforge">BACK TO FORGE</button></div></div>`;
+  animateCanvas("revealcv", (c, t) => { const g = c.getContext("2d"); g.clearRect(0, 0, 200, 200); const gr = g.createRadialGradient(100, 100, 5, 100, 100, 100); gr.addColorStop(0, Items.RARITY[r.item.rarity].glow || "rgba(255,255,255,.2)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, 200, 200); itemIconOver(c, r.item, t); });
+}
+function itemIconOver(c, it, t) {   // like itemIcon but without clearing (keeps the glow)
+  const g = c.getContext("2d"), S = c.width / 40;
+  if (it.slot === "pet") { Items.drawPet(g, it.template, 10 * S, 10 * S, S * 2); return; }
+  Viber.draw(g, "0x0000000000000000000000000000000000000000", "Fresh", 1, 4 * S, 4 * S, S);
+  Items.drawGear(g, { [it.slot]: it.template }, 4 * S, 4 * S, S, t);
+}
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-qtab],[data-tier],[data-slot],[data-claim],[data-equip],[data-unequip],[data-reroll],[data-salvage],[data-pick],[data-drop],[data-cap],[data-ftab],[data-fweek],[data-gchest],[data-buy],[data-color],[data-amt],#doburn,#dobase,#dosponsor,#doforge,#openchest,#backforge,#copyhero"); if (!t) return;
+  if (t.dataset.buy) {
+    t.disabled = true; const r = await api("buy", { key: t.dataset.buy }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); toast(errText(r)); t.disabled = false; return; }
+    sfx.win(); confetti(60, ["#ff7a1a", "#ffd23f", "#ff4b6e"]); toast(`unlocked · −${fmt(r.spent)} Embers`);
+    if (t.dataset.buy === "hard_mode") questTab = "hard";
+    await load(); if (current === "arena") { FAN = await api("fantasy"); } return renderWin();
+  }
+  if (t.dataset.color) {
+    const r = await api("buy", { key: "name_color", value: t.dataset.color }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); return toast(errText(r)); }
+    sfx.coin(); toast(r.changed ? "colour changed" : `name colour unlocked · −${fmt(r.spent)} Embers`); api("pos", { x: Math.round(hero.x), y: Math.round(hero.y), tx: Math.round(hero.tx), ty: Math.round(hero.ty), face: hero.face, refresh: 1 }).catch(() => { });
+    await load(); return renderWin();
+  }
+  if (t.dataset.amt) { const el = $("burnamt"); el.value = t.dataset.amt === "max" ? ($("vqbal").dataset.max || "") : t.dataset.amt; return; }
+  if (t.id === "doburn") return burnVquest();
+  if (t.id === "dobase") {
+    const r = await api("guildbase", { amount: Number($("baseamt").value) }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); return toast(errText(r)); }
+    sfx.win(); toast(`added to the base · level ${r.level}`); await load(); return renderWin();
+  }
+  if (t.id === "dosponsor") {
+    t.disabled = true; const r = await api("sponsor", { curve: $("sptoken").value, hours: Number($("sphours").value) }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); toast(errText(r)); t.disabled = false; return; }
+    sfx.win(); confetti(80); toast("booked: your quest goes live " + (Date.parse(r.starts_at) <= Date.now() + 60000 ? "now" : "at " + new Date(r.starts_at).toISOString().slice(11, 16) + " UTC"), 4000);
+    await load(); return renderWin();
+  }
+  if (t.dataset.ftab) { fameTab = t.dataset.ftab; fameWeek = null; sfx.click(); return renderWin(); }
+  if (t.dataset.fweek) { fameWeek = t.dataset.fweek; sfx.click(); return renderWin(); }
+  if (t.dataset.gchest) {
+    t.disabled = true; const r = await api("guildchest", { level: Number(t.dataset.gchest) }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); toast(r && r.error === "claimed" ? "already opened" : "not yet, keep trading"); }
+    else { sfx.win(); confetti(90, ["#ffd23f", "#b26bff", "#dff902"]); toast("guild chest: " + Object.entries(r.mat).map(([k, n]) => `+${n} ${k}`).join(" · "), 3500); }
+    await load(); return renderWin();
+  }
+  if (t.dataset.pick) { t.disabled = true; return fantasyDo({ add: t.dataset.pick }, "picked! it scores from now on"); }
+  if (t.dataset.drop) return fantasyDo({ remove: t.dataset.drop });
+  if (t.dataset.cap) return fantasyDo({ captain: t.dataset.cap }, "new captain, counts 1.5x");
+  if (t.id === "copyhero") { try { await navigator.clipboard.writeText(location.origin + "/h/" + ME.wallet); toast("link copied"); } catch (_) { toast(location.origin + "/h/" + ME.wallet, 5000); } return; }
+  if (t.dataset.reroll) {
+    t.disabled = true; const r = await api("reroll", { quest: t.dataset.reroll, embers: !!t.dataset.paid }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); toast(r && r.error === "used_today" ? "you already swapped a quest today" : r && r.error && r.error !== "not_rerollable" ? errText(r) : "could not swap this quest"); }
+    else { sfx.coin(); toast("quest swapped"); }
+    await load(); return renderWin();
+  }
+  if (t.dataset.salvage) {
+    if (!t.dataset.armed) { t.dataset.armed = 1; t.textContent = "SURE? " + t.dataset.get.toUpperCase(); t.style.color = "var(--dn)"; setTimeout(() => { if (document.body.contains(t)) { delete t.dataset.armed; t.textContent = "SALVAGE"; t.style.color = "var(--g2)"; } }, 3000); return; }
+    t.disabled = true; const r = await api("salvage", { id: t.dataset.salvage }).catch(() => null);
+    if (!r || !r.ok) { sfx.fail(); toast("could not salvage that"); } else { sfx.hammer(); sfx.coin(); toast("salvaged: " + Object.entries(r.got).map(([k, n]) => `+${n} ${k}`).join(" · ")); }
+    await load(); return renderWin();
+  }
+  if (t.dataset.qtab) { questTab = t.dataset.qtab; sfx.click(); return renderWin(); }
+  if (t.dataset.tier) { forgeSel.rarity = t.dataset.tier; sfx.click(); return renderWin(); }
+  if (t.dataset.slot) { forgeSel.slot = t.dataset.slot; sfx.click(); return renderWin(); }
+  if (t.id === "doforge") return doForge();
+  if (t.id === "openchest") return openChest();
+  if (t.id === "backforge") { current = "forge"; return renderWin(); }
+  if (t.dataset.equip) { sfx.coin(); await api("equip", { id: t.dataset.equip }); api("pos", { x: Math.round(hero.x), y: Math.round(hero.y), tx: Math.round(hero.tx), ty: Math.round(hero.ty), face: hero.face, refresh: 1 }).catch(() => { }); await load(); if (current === "forge" && !$("revealcv")) return renderWin(); current = "hero"; return renderWin(); }
+  if (t.dataset.unequip) { sfx.click(); await api("unequip", { slot: t.dataset.unequip }); await load(); return renderWin(); }
+  if (t.dataset.claim) {
+    t.disabled = true;
+    const before = ME.level, r = await api("claim", { quest: t.dataset.claim, period: t.dataset.period }).catch(() => null);
+    if (!r || !r.ok) { t.disabled = false; return toast("could not claim: " + (r && r.error || "try again")); }
+    sfx.coin(); confetti(60);
+    const got = `+${r.reward.xp} XP` + (r.reward.bonus ? ` (+${r.reward.bonus}% gear)` : "") + Object.entries(r.reward.mat || {}).map(([k, n]) => ` · +${n} ${k}`).join("");
+    toast(got, 3000); floatText(`+${r.reward.xp} XP`);
+    await load(); renderWin();
+    if (ME.level > before) { sfx.level(); banner("LEVEL UP!", "LEVEL " + ME.level); confetti(200); }
+  }
+});
+
+/* ================= live town ================= */
+function syncPos(now) {   // tell the street where you're walking: on every new target, plus a heartbeat
+  const dest = hero.path && hero.path.length ? hero.path[hero.path.length - 1] : [hero.tx, hero.ty];
+  const tx = Math.round(dest[0]), ty = Math.round(dest[1]), key = tx + "," + ty;
+  if ((key !== sentKey && now - sentAt > 250) || now - sentAt > 15000) {
+    sentKey = key; sentAt = now;
+    fetch("/api/pos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ x: Math.round(hero.x), y: Math.round(hero.y), tx, ty, face: hero.face }) }).catch(() => { });
+  }
+}
+function townLive() {
+  if (town || !window.EventSource) return;
+  town = new EventSource("/api/town");
+  const add = p => { if (!ME || p.w === ME.wallet) return; const o = OTHERS.get(p.w); const n = { ...(o || {}), ...p, x: o ? o.x : p.x, y: o ? o.y : p.y }; OTHERS.set(p.w, n); routeTo(n, p.tx, p.ty); };
+  town.addEventListener("snap", ev => { OTHERS.clear(); JSON.parse(ev.data).players.forEach(add); onlineCount(); sentKey = ""; });
+  town.addEventListener("join", ev => { add(JSON.parse(ev.data)); onlineCount(); });
+  town.addEventListener("move", ev => { const m = JSON.parse(ev.data), o = OTHERS.get(m.w); if (o) { if (Math.hypot(o.x - m.x, o.y - m.y) > 120) { o.x = m.x; o.y = m.y; } routeTo(o, m.tx, m.ty); } });
+  town.addEventListener("leave", ev => { OTHERS.delete(JSON.parse(ev.data).w); onlineCount(); });
+  town.addEventListener("emote", ev => { const e = JSON.parse(ev.data), [text, emoji] = EMO[e.e] || []; if (!text || !ME || e.w === ME.wallet) return; const o = OTHERS.get(e.w); if (o) { o.bubble = { text, emoji, t: performance.now() }; tone(880, .05, "square", .025); } });
+  town.addEventListener("trade", ev => {
+    const e = JSON.parse(ev.data); if (!ME || e.w === ME.wallet) return; const o = OTHERS.get(e.w); if (!o) return;
+    o.bubble = { text: `${e.side > 0 ? "BUY" : "SELL"} ${e.sym ? "$" + e.sym : ""} ${e.eth.toFixed(3)}`, t: performance.now(), c: e.side > 0 ? "#b8f5cf" : "#ffc4bb" };
+    if (Math.abs(o.x - hero.x) < 300) tone(e.side > 0 ? 1175 : 523, .06, "square", .02);
+  });
+}
+function onlineCount() { $("onn").textContent = OTHERS.size + 1; }
+async function emote(e) {
+  if (!ME || !EMO[e]) return;
+  const [text, emoji] = EMO[e]; heroBubble = { text, emoji, t: performance.now() }; sfx.click();
+  const r = await api("emote", { e }).catch(() => null);
+  if (r && r.error === "slow_down") toast("easy, one emote every few seconds");
+}
+document.querySelectorAll("[data-emote]").forEach(b => b.onclick = ev => { ev.stopPropagation(); emote(b.dataset.emote); });
+addEventListener("keydown", e => { if (!ME || current || /INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) return; const k = ["gm", "lfg", "gg", "fire", "rocket", "wave"][Number(e.key) - 1]; if (k) emote(k); });
+
+/* ================= the furnace: burn VQUEST from your own wallet ================= */
+const CHAIN = "0xb626", DEAD = "000000000000000000000000000000000000dead";   // Robinhood Chain testnet (46630)
+async function burnVquest() {
+  const msg = $("burnmsg"), amt = Number(String($("burnamt").value).replace(",", "."));
+  if (!(amt > 0)) return toast("type how much VQUEST to burn");
+  if (!window.ethereum) return toast("no wallet extension found");
+  try {
+    const [from] = await ethereum.request({ method: "eth_requestAccounts" });
+    if (from.toLowerCase() !== ME.wallet) return toast("switch your wallet to the account you signed in with");
+    try { await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN }] }); }
+    catch (e) { if (e.code === 4902) return toast("add Robinhood Chain testnet to your wallet first"); throw e; }
+    const [whole, frac = ""] = String(amt).split("."), raw = BigInt(whole) * 10n ** 18n + BigInt((frac + "0".repeat(18)).slice(0, 18));
+    const data = "0xa9059cbb" + DEAD.padStart(64, "0") + raw.toString(16).padStart(64, "0");   // transfer(0x…dEaD, amount)
+    msg.textContent = "confirm the transfer in your wallet…";
+    const tx = await ethereum.request({ method: "eth_sendTransaction", params: [{ from, to: ME.economy.token, data, value: "0x0" }] });
+    msg.textContent = "burning… " + tx.slice(0, 12) + "… Embers land when the chain confirms."; sfx.hammer();
+  } catch (e) { msg.textContent = e && e.code === 4001 ? "you cancelled" : "could not send: " + (e.message || e); }
+}
+
+/* ================= first-visit tutorial ================= */
+const TUT = [
+  ["🧑‍🚀", "THIS IS YOU", "your wallet is your character. its class and level come from how you trade on vibe/vibe. walk around the plaza with the arrow keys or WASD, or just click where you want to go."],
+  ["📜", "QUESTS DO THEMSELVES", "pick up quests at the Quest Board, then trade on vibe/vibe. the chain is the referee: progress updates live, then you claim XP and materials."],
+  ["⚒", "FORGE YOUR GEAR", "melt materials into gear at the Forge. gear shows on your hero and adds up to +50% XP to every quest. a free chest waits on the street every day."],
+  ["⚔", "ARENA AND GUILD", "pick 5 tokens in the Arena's fantasy league and score what they do this week. every XP you claim also counts for your vibe/vibe guild's season."],
+];
+let tutStep = 0;
+function tutShow(i) {
+  tutStep = i; const [ic, h, p] = TUT[i];
+  $("tic").innerHTML = i === 0 && ME ? '<canvas id="tutcv" width="80" height="80" style="width:96px;height:96px"></canvas>' : esc(ic); $("th").textContent = h; $("tp").textContent = p;
+  $("tdots").innerHTML = TUT.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("");
+  $("tnext").textContent = i === TUT.length - 1 ? "LET'S GO" : "NEXT"; $("tut").hidden = false;
+  if (i === 0 && ME) animateCanvas("tutcv", (c, t) => portrait(c, ME.wallet, ME.cls, ME.level, ME.gear, t));
+}
+function tutEnd() { $("tut").hidden = true; try { localStorage.setItem("vq_tut", "1"); } catch (_) { } }
+$("tnext").onclick = () => { sfx.click(); if (tutStep < TUT.length - 1) tutShow(tutStep + 1); else { tutEnd(); sfx.win(); goTo("quests"); } };
+$("tskip").onclick = () => { sfx.click(); tutEnd(); };
+$("help").onclick = () => { sfx.click(); tutShow(0); };
+function tutMaybe() { let seen = false; try { seen = localStorage.getItem("vq_tut") === "1"; } catch (_) { } if (!seen) setTimeout(() => tutShow(0), 900); }
+
+/* ================= data ================= */
+function hud() {
+  const m = ME; $("lvlbox").hidden = false; $("mats").hidden = false; $("out").hidden = false; $("help").hidden = false; $("quick").hidden = false; $("welcome").hidden = true;
+  $("lvl").textContent = "LV " + m.level;
+  $("xpbar").style.width = (m.next > m.cur ? Math.max(3, Math.min(100, (m.xp - m.cur) / (m.next - m.cur) * 100)) : 100) + "%";
+  $("xpt").textContent = `${fmt(m.xp)} / ${fmt(m.next)} XP · ${m.cls}${m.guild ? " · " + (m.guild.name || m.guild.slug) : ""}`;
+  $("mats").innerHTML = MATS.map(k => `<span class="mat" title="${k}">${gem(k)}${fmt(m.materials[k])}<span class="dim"> ${k}</span></span>`).join("")
+    + `<span class="mat" title="Embers: burn VQUEST at the Furnace" style="${m.economy && m.economy.live ? "" : "opacity:.5"}"><i class="ember"></i>${fmt(m.embers, 0)}<span class="dim"> embers</span></span>`;
+  const claimable = m.quests.filter(q => q.done && !q.claimed).length;
+  $("qdot").hidden = !claimable; $("cdot").hidden = !m.chest_open;
+  const gch = m.goal ? m.goal.levels.filter(l => l.reached && !l.claimed).length : 0;
+  if ($("gdot")) $("gdot").hidden = !gch;
+  $("note").textContent = claimable ? `${claimable} quest reward${claimable > 1 ? "s" : ""} waiting at the Quest Board` : "click anywhere on the plaza to walk, or use the arrow keys / WASD and press E at a door. trade on vibe/vibe and watch the board light up";
+}
+async function load() {
+  const r = await api("me").catch(() => null);
+  if (!r || !r.ok) {
+    ME = null; $("online").hidden = true; $("emotes").hidden = true; $("welcome").hidden = false; ["lvlbox", "mats", "out", "help", "quick"].forEach(id => $(id).hidden = true); $("note").textContent = ""; return;
+  }
+  const first = !ME; ME = r; hud(); live(); townLive(); $("online").hidden = false; $("emotes").hidden = false;
+  if (ME.unlocks && ME.unlocks.emote_pack && !document.querySelector('[data-emote="wagmi"]')) {
+    $("emotes").insertAdjacentHTML("beforeend", ["wagmi", "ngmi", "diamond", "frog", "pray", "skull"].map(k => `<button data-emote="${k}">${EMO[k][0]}</button>`).join(""));
+    document.querySelectorAll("[data-emote]").forEach(b => b.onclick = ev => { ev.stopPropagation(); emote(b.dataset.emote); });
+  }
+  if (first) { tutMaybe(); api("fantasy").then(f => { if (f && f.ok) FAN = f; }).catch(() => { }); }
+  if (!NPCS.length) {
+    const lb = await api("leaderboard").catch(() => null);
+    NPCS = ((lb && lb.rows) || []).filter(x => x.wallet !== ME.wallet).slice(0, 6).map((x, i) => ({ wallet: x.wallet, gear: x.gear || {}, x: 80 + i * 110, y: 230 + (i % 3) * 50, tx: 80 + i * 110, ty: 230 + (i % 3) * 50, path: [], face: 1, label: "#" + (i + 1) }));
+  }
+}
+function live() {
+  if (es || !window.EventSource) return;
+  es = new EventSource("/api/events");
+  es.addEventListener("quest", ev => {
+    const e = JSON.parse(ev.data), q = ME && ME.quests.find(x => x.id === e.quest && x.period === e.period); if (!q) return;
+    const was = q.done; Object.assign(q, { progress: e.progress, target: e.target, done: e.done });
+    if (current === "quests") { const el = $(`q-${q.id}-${q.period}`); if (el) { el.outerHTML = qcard(q); $(`q-${q.id}-${q.period}`).classList.add("flash"); } }
+    if (e.done && !was) { sfx.win(); banner("QUEST COMPLETE", q.title); confetti(80); floatText("QUEST!"); }
+    hud();
+  });
+  es.addEventListener("embers", async ev => {
+    const e = JSON.parse(ev.data); sfx.win(); confetti(140, ["#ffd23f", "#ff7a1a", "#ff4b6e"]); banner("+" + fmt(e.amount) + " EMBERS", "the furnace roars");
+    await load(); if (current === "furnace") renderWin();
+  });
+  es.addEventListener("trade", ev => { const t = JSON.parse(ev.data); floatText(`${t.side > 0 ? "BUY" : "SELL"} ${t.eth.toFixed(3)}`, t.side > 0 ? "#5bd08a" : "#ff8a7a"); sfx.coin(); });
+}
+
+/* ================= sign in ================= */
+async function signIn() {
+  const m = $("msg");
+  if (!window.ethereum) { m.className = "msg err"; m.textContent = "no wallet extension found. open this page in a browser with MetaMask, Rabby or similar"; return; }
+  try {
+    $("in").disabled = true; m.className = "msg"; m.textContent = "waiting for your wallet…";
+    const [address] = await ethereum.request({ method: "eth_requestAccounts" });
+    const n = await api("nonce");
+    m.textContent = "sign the message in your wallet (no transaction)";
+    const signature = await ethereum.request({ method: "personal_sign", params: [n.message, address] });
+    const r = await api("login", { address, signature, message: n.message });
+    if (!r.ok) throw new Error(r.error);
+    sfx.win(); await load(); banner("WELCOME", "your quests are on the board"); confetti(100);
+  } catch (e) { m.className = "msg err"; m.textContent = e && e.code === 4001 ? "you cancelled the signature" : "could not sign in: " + (e.message || e); }
+  $("in").disabled = false;
+}
+$("in").onclick = signIn;
+$("out").onclick = async () => { await api("logout"); if (es) { es.close(); es = null; } if (town) { town.close(); town = null; OTHERS.clear(); } ME = null; closeWin(); load(); };
+if (window.ethereum && ethereum.on) ethereum.on("accountsChanged", async () => { await api("logout"); location.reload(); });
+setInterval(() => { if (current === "forge" || current === "hero" || current === "player") drawItemIcons(); }, 500);
+setInterval(async () => { if (!ME) return; const f = await api("fantasy").catch(() => null); if (f && f.ok) { FAN = f; if (current === "arena") renderArena(); } }, 120_000);
+load();
+</script>
+</body>
+</html>

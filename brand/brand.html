@@ -1,0 +1,52 @@
+<!doctype html><html><head><style>@font-face{font-family:"Press Start 2P";src:url(ps2p.woff2)}@font-face{font-family:"Instrument Sans";font-weight:600;src:url(is600.woff2)}</style></head>
+<body style="margin:0;background:#222"><script src="viber.js"></script><script src="items.js"></script><script>
+const ADDR = '0x' + (8 * 7919 + 101).toString(16).padStart(40, '0');
+// the mark on a 48x48 pixel grid: lime-rimmed badge, crossed swords, the crowned viber
+function mark(g, ox, oy, u) {
+  const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(ox + x * u, oy + y * u, w * u, h * u); };
+  // badge with chamfered corners
+  for (let y = 0; y < 48; y++) { const cut = Math.max(0, 4 - y, y - 43); R(cut, y, 48 - cut * 2, 1, '#dff902'); }
+  for (let y = 2; y < 46; y++) { const cut = Math.max(0, 5 - y, y - 42); R(2 + cut, y, 44 - cut * 2, 1, '#0d0f13'); }
+  for (let y = 4; y < 44; y++) { const cut = Math.max(0, 6 - y, y - 41); R(4 + cut, y, 40 - cut * 2, 1, y < 24 ? '#151a2b' : '#10131c'); }
+  // stars
+  for (const [x, y] of [[9, 9], [38, 11], [7, 30], [40, 33], [12, 40]]) R(x, y, 1, 1, '#dff902');
+  // crossed swords behind the hero
+  const sword = (dir) => {   // a long diagonal blade whose tip shows beside the crown; hilt in the bottom corner
+    const X = i => dir > 0 ? 6 + i : 41 - i, Y = i => 41 - i;
+    for (let i = 5; i < 36; i++) { R(X(i), Y(i), 2, 2, i > 31 ? '#ffffff' : '#c9d2d8'); R(X(i) + (dir > 0 ? 1 : 0), Y(i) + 1, 1, 1, '#8a919c'); }
+    for (let i = 0; i < 4; i++) R(X(i), Y(i), 2, 2, '#a0612b');                       // grip
+    for (let k = -3; k <= 3; k++) R(X(4) + (dir > 0 ? k : -k) * -1 + (dir > 0 ? 0 : 0), Y(4) - k, 2, 2, '#ffd23f');   // cross guard
+    R(X(-1), Y(-1), 2, 2, '#ffd23f');                                                  // pommel
+  };
+  sword(1); sword(-1);
+  // the hero (32x32 sprite at 1 unit per pixel, centred)
+  const s = document.createElement('canvas'); s.width = s.height = 40; const sg = s.getContext('2d');
+  Viber.draw(sg, ADDR, 'Fresh', 60, 4, 4, 1); Items.drawGear(sg, { head: 'crown' }, 4, 4, 1, 0);
+  const d = sg.getImageData(0, 0, 40, 40).data;
+  for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) { const k = (y * 40 + x) * 4; if (d[k + 3] > 128) R(x + 4, y + 6, 1, 1, `rgb(${d[k]},${d[k + 1]},${d[k + 2]})`); }
+}
+function make(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; draw(g, w, h); return c; }
+window.build = async () => {
+  await document.fonts.load('40px "Press Start 2P"'); await document.fonts.load('600 30px "Instrument Sans"');
+  const out = {};
+  out.icon = make(1024, 1024, (g) => mark(g, 32, 32, 20)).toDataURL();
+  out.icon_dark = make(1024, 1024, (g, w, h) => { g.fillStyle = '#05060a'; g.fillRect(0, 0, w, h); mark(g, 128, 128, 16); }).toDataURL();
+  const wordmark = (g, x, y, size) => { g.font = size + 'px "Press Start 2P"'; g.textBaseline = 'top'; g.fillStyle = '#3d4a00'; g.fillText('VIBERQUEST', x + size / 12, y + size / 12); g.fillStyle = '#dff902'; g.fillText('VIBERQUEST', x, y); };
+  out.banner = make(1500, 500, (g, w, h) => {
+    g.fillStyle = '#05060a'; g.fillRect(0, 0, w, h);
+    const gr = g.createRadialGradient(1100, 250, 20, 1100, 250, 700); gr.addColorStop(0, 'rgba(223,249,2,.10)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 40; i++) { const bx = i * 40, bh = 60 + (i * 53) % 120; g.fillStyle = '#0c0f22'; g.fillRect(bx, 420 - bh, 34, bh); for (let yy = 430 - bh; yy < 410; yy += 16) for (let xx = bx + 5; xx < bx + 30; xx += 10) if ((xx * 7 + yy * 3) % 5 < 2) { g.fillStyle = 'rgba(223,249,2,.35)'; g.fillRect(xx, yy, 4, 6); } }
+    for (let y = 420; y < h; y += 14) for (let x = (y / 14 % 2) * 12; x < w; x += 24) { g.fillStyle = (x + y) % 5 ? '#2a2d36' : '#323641'; g.fillRect(x, y, 23, 13); }
+    mark(g, 96, 82, 7);
+    wordmark(g, 520, 130, 72);
+    g.font = '28px "Press Start 2P"'; g.fillStyle = '#f2f4f3'; g.fillText('YOUR TRADES ARE YOUR QUESTS', 524, 250);
+    g.font = '600 30px "Instrument Sans"'; g.fillStyle = '#7d848a'; g.fillText('a pixel RPG on vibe/vibe  ·  viberquest.fun', 524, 312);
+  }).toDataURL();
+  out.wordmark = make(1600, 200, (g) => wordmark(g, 20, 40, 120)).toDataURL();
+  // favicon svg from the mark at 1 unit per pixel
+  const f = make(48, 48, (g) => mark(g, 0, 0, 1)), d = f.getContext('2d').getImageData(0, 0, 48, 48).data; let rects = '';
+  for (let y = 0; y < 48; y++) for (let x = 0; x < 48; x++) { const k = (y * 48 + x) * 4; if (d[k + 3] > 128) rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="#${[d[k], d[k + 1], d[k + 2]].map(v => v.toString(16).padStart(2, '0')).join('')}"/>`; }
+  out.svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" shape-rendering="crispEdges">${rects}</svg>`;
+  return out;
+};
+</script></body></html>
