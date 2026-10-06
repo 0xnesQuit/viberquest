@@ -224,8 +224,14 @@ class DungeonScene extends Phaser.Scene {
     if (d) this.drop(m.s.x, m.s.y - (m.boss ? 30 : 12), d);
     if (this.stairsOpen() && !this.openedOnce) { this.openedOnce = true; if (!m.boss) toast("the stairs down are open"); this.stairsGlow(); }
   }
+  tip(key, text) {   // one-time hints, remembered per browser
+    try { if (localStorage.getItem("vq_tip_" + key)) return; localStorage.setItem("vq_tip_" + key, "1"); } catch (_) { }
+    toast(text, 5200);
+  }
   drop(x, y, d) {
     let dy = 0;
+    if (d.gold) this.tip("bag", "gold and materials go into your BAG. walk out (stairs up or LEAVE) to keep it all, fall and you keep half");
+    if (d.gear) this.tip("gear", "gear goes straight to your inventory and is never lost. equip it in the HERO window");
     if (d.gold) {
       for (let i = 0; i < Math.min(6, 1 + (d.gold >> 3)); i++) {
         const c = this.add.sprite(x, y, "coin").setDepth(9500).play("coin_spin");
@@ -258,6 +264,7 @@ class DungeonScene extends Phaser.Scene {
     this.me.setTint(0xff5050); this.time.delayedCall(140, () => this.me.active && this.me.clearTint());
     const a = Math.atan2(this.me.y - m.s.y, this.me.x - m.s.x); this.kb = { t: this.time.now + 130, vx: Math.cos(a) * 170, vy: Math.sin(a) * 170 };
     this.cameras.main.shake(90, 0.004); this.sfx("hit2", 0.45); this.float(this.me.x, this.me.y - 24, "-" + m.dmg, "#ff6b6b");
+    if (this.hp < this.maxHp * 0.35) this.tip("lowhp", this.bag.potions > 0 ? "low health: drink a potion (Q) or walk out before you fall" : "low health: walk out (LEAVE) to keep the whole bag, or risk it");
     this.dhud();
   }
   flushHurt() {
@@ -313,7 +320,7 @@ class DungeonScene extends Phaser.Scene {
     this.over = true; this.me.setVelocity(0, 0); for (const m of this.mobs) if (m.s.active && m.s.body) m.s.setVelocity(0, 0);
     this.sound.stopAll(); this.sfx(dead ? "gameover" : "levelup", 0.6);
     if (dead) { this.me.setTint(0x777777); this.me.setAngle(90); }
-    const sum = { dead, floor: this.run.floor, banked: banked || {}, kills: this.bag.kills || 0 };
+    const sum = { dead, floor: this.run.floor, banked: banked || {}, kills: this.bag.kills || 0, bag: JSON.parse(JSON.stringify(this.bag)), eligible: !!this.run.eligible };
     setTimeout(() => { DSUM = sum; openWin("dsum"); }, dead ? 900 : 300);   // closing that window walks you back to town
     if (typeof load === "function") load();
   }
@@ -414,9 +421,18 @@ function renderDungeonWin(wt, wb) {
   if (current === "dsum") {
     const s = DSUM || { banked: {} }, b = s.banked;
     wt.innerHTML = s.dead ? `YOU FELL<small>floor ${s.floor}</small>` : `OUT ALIVE<small>from floor ${s.floor}</small>`;
+    const bag = s.bag || {}, lost = s.dead ? { gold: (bag.gold || 0) - (b.gold || 0), mat: Object.fromEntries(Object.entries(bag.mat || {}).map(([m, n]) => [m, n - ((b.mat || {})[m] || 0)]).filter(([, n]) => n > 0)) } : null;
+    const line = (g, mat) => [g ? `${fmt(g)} gold` : "", ...Object.entries(mat || {}).filter(([, n]) => n > 0).map(([m, n]) => `${n} ${m}`)].filter(Boolean).join(", ") || "nothing";
     wb.innerHTML = `<div class="reveal"><h4 style="color:${s.dead ? "#ff6b6b" : "var(--lime)"}">${s.dead ? "THE DUNGEON GOT YOU" : "THE BAG IS BANKED"}</h4>
-      <p>${s.dead ? "half the gold and materials were lost. every $VQUEST you found stays yours." : "everything you carried out is yours."} ${s.kills} monster${s.kills === 1 ? "" : "s"} down.</p>
-      <div>${b.gold ? `<span class="chip">+${fmt(b.gold)} gold</span>` : ""}${Object.entries(b.mat || {}).map(([m, n]) => `<span class="chip">${gem(m)}${n} ${m}</span>`).join("")}${b.xp ? `<span class="chip">+${fmt(b.xp)} XP</span>` : ""}${b.vquest ? `<span class="chip" style="color:var(--lime)">+${fmt(b.vquest)} $VQUEST</span>` : ""}${(b.gear || []).map(g => `<span class="chip" style="color:#b26bff">⚔ ${esc(g)}</span>`).join("")}</div>
+      <div class="dsum">
+        <div><span class="k">IN YOUR BAG</span><b>${line(bag.gold, bag.mat)}</b></div>
+        <div><span class="k">${s.dead ? "YOU KEEP (HALF)" : "YOU KEEP (ALL)"}</span><b style="color:var(--lime)">${line(b.gold, b.mat)} · +${fmt(b.xp || 0)} XP</b></div>
+        ${s.dead ? `<div><span class="k">LOST</span><b style="color:#ff8a7a">${line(lost.gold, lost.mat)}</b><small>walk out with the stairs up or LEAVE next time to keep everything</small></div>` : ""}
+        ${(b.gear || []).length ? `<div><span class="k">GEAR (NEVER LOST)</span><b style="color:#b26bff">${(b.gear || []).map(esc).join(", ")}</b><small>equip it in the HERO window</small></div>` : ""}
+        <div><span class="k">$VQUEST</span><b>${b.vquest ? `+${fmt(b.vquest)} (in your balance)` : "none this run"}</b><small>${s.eligible ? "drops by chance from monsters, more from chests, always from bosses" : "this wallet has never traded on vibe/vibe, so $VQUEST drops turned into gold. make one trade with it to unlock them"}</small></div>
+        <div><span class="k">WHAT GOLD IS FOR</span><small>potions (40) before a run, an extra run (150) or a gear box (400) at the dungeon gate</small></div>
+      </div>
+      <p>${s.kills} monster${s.kills === 1 ? "" : "s"} down on ${s.floor} floor${s.floor === 1 ? "" : "s"}.</p>
       <div style="display:flex;gap:8px;margin-top:6px"><button class="btn lime" id="dagain">GO AGAIN</button><button class="btn ghost" id="dtown">BACK TO TOWN</button></div></div>`;
     $("dagain").onclick = () => { sfx.click(); goTown(); setTimeout(() => openWin("dungeon"), 50); };
     $("dtown").onclick = () => { sfx.click(); closeWin(); };

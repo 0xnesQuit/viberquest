@@ -122,7 +122,7 @@
 .dhud .dtop b{color:var(--lime)} .dhp{position:relative;width:150px;height:14px;background:#2a1216;border:1px solid #000;border-radius:3px;overflow:hidden}
 .dhp i{position:absolute;inset:0 auto 0 0;background:linear-gradient(#ff6b6b,#d2303a);transition:width .2s} .dhp span{position:relative;display:block;text-align:center;line-height:14px;font-size:8px;text-shadow:1px 1px 0 #000}
 .dhud .dbag{position:absolute;left:10px;top:46px;display:flex;flex-wrap:wrap;gap:10px;background:rgba(0,0,0,.6);border:1px solid #2a2f36;border-radius:6px;padding:6px 9px;max-width:calc(100% - 20px)}
-.dbag .g b{color:#ffd23f} .dbag .v b{color:var(--lime)} .dbag .gem{margin-right:3px}
+.dbag .bl{color:#7d848a} .dbag .g b{color:#ffd23f} .dbag .v b{color:var(--lime)} .dbag .gem{margin-right:3px}
 .dhud .dbtns{position:absolute;right:10px;top:10px;display:flex;gap:6px;pointer-events:auto}
 .dbtns button{font-family:var(--pixel);font-size:8px;color:#f2f4f3;background:rgba(0,0,0,.7);border:1px solid #3a414a;border-radius:6px;padding:8px 10px;cursor:pointer}
 .dbtns button:hover{border-color:var(--lime)} .dbtns #dleave.sure{background:#7a1f27;border-color:#ff6b6b}
@@ -143,6 +143,7 @@ body.touch .dhud .dkeys{display:none} body.touch .emotes{bottom:auto;top:44px}
 .dlob .dstats>div{background:#14171b;border:1px solid #2a2f36;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px}
 .dlob .dstats b{font-family:var(--pixel);font-size:14px} .dlob .dstats small{color:var(--g1);font-size:12px}
 .dlob .dpots{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 10px;color:var(--g1);font-size:13px}
+.dsum{display:grid;gap:8px;width:100%;text-align:left;margin:4px 0 6px} .dsum>div{background:#14171b;border:1px solid #2a2f36;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:3px} .dsum b{font-size:14px} .dsum small{color:var(--g1);font-size:12px}
 .dlob .dshop{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px} .dlob .dshop .btn{font-size:9px;padding:9px 11px}
 .dlob .dpots button{font-family:var(--pixel);font-size:9px;background:#14171b;color:#f2f4f3;border:1px solid #2a2f36;border-radius:6px;padding:6px 9px;cursor:pointer}
 .dlob .dpots button.on{border-color:var(--lime);color:var(--lime)}
@@ -248,7 +249,7 @@ body.touch .dhud .dkeys{display:none} body.touch .emotes{bottom:auto;top:44px}
     <div class="labels" id="labels"></div>
     <div class="dhud" id="dhud" hidden>
       <div class="dtop"><b id="dfl">FLOOR 1</b><div class="dhp"><i id="dhpb"></i><span id="dhpt"></span></div></div>
-      <div class="dbag"><span class="g">● <b id="dgold">0</b></span><span class="v">$VQUEST <b id="dvq">0</b></span><span>☠ <b id="dkills">0</b></span><span id="dmats"></span></div>
+      <div class="dbag"><span class="bl">BAG</span><span class="g">GOLD <b id="dgold">0</b></span><span class="v">$VQUEST <b id="dvq">0</b></span><span>KILLS <b id="dkills">0</b></span><span id="dmats"></span></div>
       <div class="dbtns"><button id="dpot">POTION <b id="dpots">0</b> · Q</button><button id="dleave">LEAVE</button></div>
       <div class="dleft" id="dleft"></div>
       <div class="dkeys">WASD / hold click: move · SPACE / tap: attack · E: chest, stairs · Q: potion</div>
@@ -1162,6 +1163,6 @@ setInterval(async () => { if (!ME) return; const f = await api("fantasy").catch(
 load();
 </script>
 <script src="/game/extras.js?v=2"></script>
-<script src="/game/dungeon.js?v=8"></script>
+<script src="/game/dungeon.js?v=9"></script>
 </body>
 </html>
