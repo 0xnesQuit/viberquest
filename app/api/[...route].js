@@ -30,8 +30,10 @@ const crypto = require("crypto");
 const pg = require("pg");
 const { verifyMessage } = require("viem");
 const Items = require("../items.js");
+const dungeonApi = require("./_dungeon.js");
 
 const db = new pg.Pool({ connectionString: process.env.VQ_PG_URL, max: 8 });
+const dungeon = dungeonApi({ db, Items });
 const SECRET = process.env.SESSION_SECRET || "";
 const DOMAIN = process.env.SITE_HOST || "play.vibercheck.xyz";
 const ADDR = /^0x[0-9a-fA-F]{40}$/;
@@ -99,6 +101,8 @@ async function assign(w) {
   const want = [
     ...pick(all.filter(q => q.kind === "daily" && !gone.has(q.id)), 3, w + day).map(q => [q, day, endOfDay(now)]),
     ...pick(all.filter(q => q.kind === "weekly"), 5, w + week).map(q => [q, week, endOfWeek(now)]),
+    ...pick(all.filter(q => q.kind === "dungeon" && q.id.startsWith("dd_")), 2, w + day + "dng").map(q => [q, day, endOfDay(now)]),
+    ...pick(all.filter(q => q.kind === "dungeon" && q.id.startsWith("dw_")), 1, w + week + "dng").map(q => [q, week, endOfWeek(now)]),
     ...(next ? [[next, "story", null]] : []),
   ];
   if ((await db.query("select 1 from vq_unlocks where wallet=$1 and key='hard_mode' and scope=$2", [w, week])).rowCount)
@@ -667,7 +671,7 @@ async function leaderboard() {
 }
 
 // ---------- live town: who is on the street right now (in memory, one app process) ----------
-const STREET = 740, STREET_H = 440, EMOTES = new Set(["gm", "lfg", "gg", "fire", "rocket", "wave"]), PACK = new Set(["wagmi", "ngmi", "diamond", "frog", "pray", "skull"]);
+const STREET = 768, STREET_H = 576, EMOTES = new Set(["gm", "lfg", "gg", "fire", "rocket", "wave"]), PACK = new Set(["wagmi", "ngmi", "diamond", "frog", "pray", "skull"]);
 const town = { streams: new Set(), players: new Map() };   // players: wallet -> { w, x, tx, face, at, info, lastEmote, streams }
 function tsend(res, ev, data) { try { res.write(`event: ${ev}\ndata: ${JSON.stringify(data)}\n\n`); } catch (_) { } }
 function tcast(ev, data) { for (const r of town.streams) tsend(r, ev, data); }
@@ -737,7 +741,7 @@ setInterval(() => { for (const set of streams.values()) for (const res of set) {
 
 module.exports = async (req, res) => {
   const u = new URL(req.url, "http://local"), route = u.pathname.replace(/^\/api\//, "").replace(/\/+$/, "");
-  if (route !== "pos" && route !== "emote" && limited(req)) return send(res, 429, { ok: false, error: "slow_down" });
+  if (route !== "pos" && route !== "emote" && !route.startsWith("run") && limited(req)) return send(res, 429, { ok: false, error: "slow_down" });
   try {
     if (route === "nonce") {
       const nonce = crypto.randomBytes(12).toString("hex");
@@ -900,6 +904,12 @@ module.exports = async (req, res) => {
     if (route === "seasons") return send(res, 200, { ok: true, ...(await seasons(u.searchParams.get("week"))) });
     if (route === "guild") return send(res, 200, { ok: true, ...(await guildSeason(w)) });
     if (route === "leaderboard") return send(res, 200, { ok: true, rows: await leaderboard() });
+    if (route === "run" || route.startsWith("run/")) {
+      if (!w) return send(res, 401, { ok: false, error: "signed_out" });
+      if (limited(req, 900, "run")) return send(res, 429, { ok: false, error: "slow_down" });
+      const out = await dungeon(route, req, w, req.method === "POST" ? await readBody(req) : {});
+      return out ? send(res, 200, out) : send(res, 404, { ok: false, error: "not_found" });
+    }
     if (route === "events") {
       if (!w) return send(res, 401, { ok: false, error: "signed_out" });
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", "Connection": "keep-alive", "X-Accel-Buffering": "no" });

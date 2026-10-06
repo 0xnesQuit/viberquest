@@ -73,7 +73,7 @@
     } else { // Fresh: a little sprout on top
       rect(16, 3, 1, 4, "#2f9e55"); rect(14, 2, 2, 2, "#7cf29a"); rect(17, 3, 2, 2, "#7cf29a");
     }
-    return { grid: g, tier, skin };
+    return { grid: g, tier, skin, eyes, ant, ear };
   }
 
   function svg(addr, cls, level, size) {

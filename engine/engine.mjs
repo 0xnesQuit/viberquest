@@ -82,6 +82,12 @@ const RULES = {
     const q = await db.query("select 1 from vv_guild_members where address = $1 limit 1", [ctx.wallet]);
     return { progress: q.rowCount ? 1 : 0, target: 1 };
   },
+  async dungeon(T, r, ctx) {   // dungeon quests: kills / chests / bosses summed, deepest floor, finished runs, all from runs started in the window
+    const q = (await db.query(`select coalesce(sum((bag->>'kills')::int),0)::int kills, coalesce(sum((bag->>'chests')::int),0)::int chests,
+      coalesce(sum((bag->>'bosses')::int),0)::int bosses, coalesce(max(floor),0)::int floor, count(*) filter (where status <> 'live')::int runs
+      from vq_runs where wallet=$1 and started_at >= to_timestamp($2) and started_at <= to_timestamp($3)`, [ctx.wallet, ctx.since, ctx.until])).rows[0];
+    return { progress: Math.min(q[r.stat] || 0, r.count || 1), target: r.count || 1 };
+  },
   async launches(T, r, ctx) {
     const q = await db.query("select count(*)::int n from vv_launches where creator=$1 and ts between $2 and $3", [ctx.wallet, ctx.since, ctx.until]);
     return { progress: q.rows[0].n, target: r.count || 1 };
@@ -268,6 +274,21 @@ async function finalize() {
     const badge = (wallet, b, rank) => c.query("insert into vq_badges (wallet, week, badge, rank) values ($1,$2,$3,$4) on conflict do nothing", [wallet, week, b, rank]);
     for (const [i, r] of players.slice(0, 3).entries()) await badge(r.ref, "fame", i + 1);
     for (const [i, r] of arena.slice(0, 3).entries()) await badge(r.ref, "arena", i + 1);
+    // dungeon: deepest floor of the week (kills break ties); $VQUEST prizes from the dungeon pool, only for wallets that traded on vibe/vibe
+    const dungeon = (await c.query(`select wallet as ref, max(floor)::int points, sum((bag->>'kills')::int)::int kills from vq_runs
+      where started_at >= $1 and started_at < $2 group by wallet having max(floor) > 1 order by 2 desc, 3 desc limit 100`, [from, to])).rows;
+    await save("dungeon", dungeon, r => ({ kills: r.kills }));
+    for (const [i, r] of dungeon.slice(0, 3).entries()) await badge(r.ref, "dungeon", i + 1);
+    const prizes = ((await c.query("select value from vq_config where key='dungeon_weekly_prizes'")).rows[0]?.value || "").split(",").map(Number).filter(n => n > 0);
+    const poolLeft = Number((await c.query("select (select value::numeric from vq_config where key='dungeon_pool') - coalesce(sum(amount),0) as left from vq_vquest_drops")).rows[0].left) || 0;
+    let paid = 0;
+    for (const [i, r] of dungeon.slice(0, prizes.length).entries()) {
+      if (!(await c.query("select 1 from vq_trades where wallet=$1 limit 1", [r.ref])).rowCount) continue;
+      const amt = Math.min(prizes[i], poolLeft - paid); if (amt <= 0) break;
+      await c.query("insert into vq_vquest_drops (wallet, run, src, amount) values ($1,$2,'weekly',$3)", [r.ref, week, amt]);
+      await c.query(`insert into vq_balances (wallet, vquest) values ($1,$2) on conflict (wallet) do update set vquest = vq_balances.vquest + excluded.vquest, updated_at = now()`, [r.ref, amt]);
+      paid += amt;
+    }
     if (guilds[0]) {   // everyone in the winning guild who earned quest XP that week
       const champs = (await c.query(`select distinct l.wallet from vq_ledger l join vv_guild_members m on m.address = l.wallet
         where m.slug = $1 and l.at >= $2 and l.at < $3 and l.xp > 0`, [guilds[0].ref, from, to])).rows;

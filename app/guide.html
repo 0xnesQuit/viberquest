@@ -78,7 +78,7 @@
 
 <div class="wrap">
 <nav class="toc" id="toc"><b>ON THIS PAGE</b>
-  <a href="#what">What is Viberquest</a><a href="#start">Get started</a><a href="#town">The town</a><a href="#hero">Your hero</a><a href="#quests">Quests</a>
+  <a href="#what">What is Viberquest</a><a href="#start">Get started</a><a href="#town">The town</a><a href="#dungeon">The dungeon</a><a href="#hero">Your hero</a><a href="#quests">Quests</a>
   <a href="#forge">Materials &amp; forge</a><a href="#chest">Daily chest</a><a href="#guild">Guild season</a><a href="#arena">Arena league</a><a href="#seasons">Seasons &amp; badges</a>
   <a href="#fair">Fair play</a><a href="#token">$VQUEST &amp; Embers</a><a href="#faq">FAQ</a>
 </nav>
@@ -112,6 +112,7 @@
         <ul>
           <li><b>Just look:</b> type your address or your @X handle (if it's on your vibe/vibe guild profile). You see your hero, quests and guild right away. Nothing to connect.</li>
           <li><b>Play without connecting:</b> the game gives you a small code amount, like 0.0002347 ETH. Send exactly that much ETH to your own address on Robinhood Chain testnet (it comes straight back to you, you only pay the network fee), or buy any token on vibe/vibe for that amount. The game unlocks by itself a few seconds later. You never sign anything on this site.</li>
+          <li><b>Play as guest:</b> no wallet at all. The game makes a throwaway testnet wallet inside your browser and you're in. You can fight in the dungeon, forge and level up right away; $VQUEST drops start once that wallet trades on vibe/vibe. Save the key from the Hero window if you want to keep the hero.</li>
           <li><b>Connect wallet:</b> sign one message to prove the wallet is yours. It is not a transaction, it costs nothing and gives the game no access to your funds.</li>
         </ul></li>
       <li><b>Read the quest board.</b> You get 3 daily quests, 5 weekly quests and the first story chapter.</li>
@@ -123,10 +124,11 @@
 
   <section id="town">
     <h2><span class="n">03</span>The town</h2>
-    <p>Everything happens on one pixel plaza, seen from above. Click anywhere to walk there, or use the <b>arrow keys / WASD</b> and press <b>E</b> at a door. On a phone, tap the plaza or the buttons under it. Day and night follow the real UTC time.</p>
+    <p>Everything happens on one pixel plaza, seen from above. Click anywhere to walk there, or use the <b>arrow keys / WASD</b> and press <b>E</b> at a door. On a phone you get a joystick on the left and action buttons on the right. Every building has a neon sign, so you always know where you are, and a few locals hang around: the Gatekeeper at the dungeon, the Blacksmith, the Banker and the Quest Giver, plus citizens walking the streets.</p>
     <p>The town is <b>live</b>: everyone who's playing right now walks the same plaza with their own hero and gear, with their level and their @X handle (or short address) over their head. When someone trades on vibe/vibe a bubble pops over their head (<b>BUY $TOKEN 0.05</b>), and you can wave with emotes (GM, LFG, GG, 🔥, 🚀, 👋, keys 1 to 6). Click another player to see their hero card. This week's top players you don't see online walk around as faded ghosts.</p>
     <div class="tbl"><table>
       <tr><th>PLACE</th><th>WHAT YOU DO THERE</th></tr>
+      <tr><td><b>Dungeon gate</b></td><td>The way down. Monsters, chests, bosses, gear and $VQUEST drops. See below.</td></tr>
       <tr><td><b>Quest Board</b></td><td>Your daily, weekly and story quests. Claim rewards and swap one daily per day.</td></tr>
       <tr><td><b>Forge</b></td><td>Turn materials into gear, equip it, or melt spare gear back into materials.</td></tr>
       <tr><td><b>Guild Hall</b></td><td>Your vibe/vibe guild's league, the weekly guild goal and its chests.</td></tr>
@@ -135,20 +137,45 @@
       <tr><td><b>Arena</b></td><td>The fantasy launchpad league. Pick 5 tokens and score what they do.</td></tr>
       <tr><td><b>Furnace</b></td><td>Burn $VQUEST, get Embers to spend in the game.</td></tr>
       <tr><td><b>Tailor</b></td><td>Name colours and an extra emote pack, for Embers.</td></tr>
-      <tr><td><b>Sponsor board</b></td><td>Sponsored quests from vibe/vibe builders, and where builders book a slot.</td></tr>
+      <tr><td><b>Market</b></td><td>Sponsored quests from vibe/vibe builders, and where builders book a slot.</td></tr>
       <tr><td><b>Treasury</b></td><td>The token treasury, burns, buybacks and season payouts, read from the chain.</td></tr>
     </table></div>
   </section>
 
+  <section id="dungeon">
+    <h2><span class="n">04</span>The dungeon</h2>
+    <p>Walk into the purple gate at the top of town. Every floor is a fresh cave of rooms and tunnels with monsters, one or two chests and stairs down. Clear most of the monsters and the stairs open. Every 5th floor a boss waits, and the stairs only open when it falls.</p>
+    <div class="tbl"><table>
+      <tr><th>CONTROLS</th><th></th></tr>
+      <tr><td><b>Move</b></td><td>WASD / arrow keys, or hold the mouse. On a phone, the joystick.</td></tr>
+      <tr><td><b>Attack</b></td><td>SPACE, a quick click or the sword button. You hit everything in front of you.</td></tr>
+      <tr><td><b>Chest / stairs</b></td><td>E, or the E button when you stand next to it.</td></tr>
+      <tr><td><b>Potion</b></td><td>Q or the heart button: heals 40%.</td></tr>
+    </table></div>
+    <h3>What drops</h3>
+    <ul>
+      <li><b>Gold</b> from every monster and chest. Spend it on potions before a run, an extra run for the day (150, up to 3) or a gear box (400).</li>
+      <li><b>Copper, silver, gold and diamond</b> for the Forge. The deeper, the rarer.</li>
+      <li><b>Gear</b> now and then from monsters and chests, always from bosses. Rarity climbs with depth. It goes straight to your inventory, so you keep it even if you fall.</li>
+      <li><b>$VQUEST</b> by chance from monsters, more often from chests, always from bosses. It lands in your in-game balance the moment it drops, also kept if you fall. Withdrawals open once $VQUEST transfers unlock. Only wallets that have traded on vibe/vibe get $VQUEST drops (others get gold instead), and there are daily caps per wallet and for everyone.</li>
+    </ul>
+    <h3>Runs, falling and walking out</h3>
+    <p>You get 5 runs a day, plus one for every vibe/vibe trade you make that day (up to 10 more). Take the stairs up at the start of a floor or press LEAVE to walk out with the whole bag. If you fall, you keep half the gold and materials, and all the gear and $VQUEST you found. Monsters you fight hit back, so keep moving. Better gear from the Forge means more damage and more HP.</p>
+    <h3>Monsters</h3>
+    <p>Rug Slimes and FUD Bats near the top, Jeets and Paper Hands a bit lower, Bear Bots and Gas Ghosts deeper, Rugpullers and Dumpsters at the bottom. The bosses take turns: The Rugger, the Bear King, the Gas Golem and The Whale.</p>
+    <h3>Dungeon quests and the weekly dive</h3>
+    <p>The quest board has a DUNGEON tab: 2 dungeon quests a day and 1 a week (defeat monsters, open chests, reach a floor, beat a boss). Every Monday the deepest divers of the week win $VQUEST from the dungeon pool: #1 5,000, #2 3,000, #3 2,000, #4 to #10 500 each, plus a DUNGEON badge for the top 3.</p>
+  </section>
+
   <section id="hero">
-    <h2><span class="n">04</span>Your hero</h2>
+    <h2><span class="n">05</span>Your hero</h2>
     <p>Every wallet has its own pixel character, generated from the address, so nobody looks exactly like you. Your <b>class</b> comes from how you trade, your <b>level</b> from trading XP (your whole vibe/vibe history) plus quest XP (everything you claim here).</p>
     <div class="classes" id="classes"></div>
     <p>Your hero has a public page you can share on X with a big card of your character, level, gear and badges. Open the Hero window and press <b>Share on X</b>.</p>
   </section>
 
   <section id="quests">
-    <h2><span class="n">05</span>Quests</h2>
+    <h2><span class="n">06</span>Quests</h2>
     <p>Every quest is checked against real chain data by the quest engine, which re-reads your trades seconds after they land and sweeps everything again every minute. You can't fake progress and you can't lose it.</p>
     <h3>Daily (3 a day, reset 00:00 UTC)</h3>
     <div class="tbl"><table id="qdaily"><tr><th>QUEST</th><th>WHAT TO DO</th><th>REWARD</th></tr></table></div>
@@ -161,7 +188,7 @@
   </section>
 
   <section id="forge">
-    <h2><span class="n">06</span>Materials &amp; forge</h2>
+    <h2><span class="n">07</span>Materials &amp; forge</h2>
     <p>Quests and chests drop four materials: <span class="chip"><i class="gem" style="background:var(--copper)"></i>copper</span><span class="chip"><i class="gem" style="background:var(--silver)"></i>silver</span><span class="chip"><i class="gem" style="background:var(--gold)"></i>gold</span><span class="chip"><i class="gem" style="background:var(--diamond)"></i>diamond</span>. At the Forge you pick a tier and a slot, swing the hammer, and get a random piece of gear of that tier.</p>
     <div class="tbl"><table>
       <tr><th>TIER</th><th>COST</th><th>SUCCESS</th><th>POWER</th></tr>
@@ -176,12 +203,12 @@
   </section>
 
   <section id="chest">
-    <h2><span class="n">07</span>Daily chest</h2>
+    <h2><span class="n">08</span>Daily chest</h2>
     <p>A chest waits on the street every UTC day: 2 to 4 copper for sure, a 25% chance of silver and a 5% chance of gold, plus 10 XP. It opens for wallets that traded on vibe/vibe in the last 7 days, so empty wallets can't farm it.</p>
   </section>
 
   <section id="guild">
-    <h2><span class="n">08</span>Guild season</h2>
+    <h2><span class="n">09</span>Guild season</h2>
     <p>Viberquest uses the <b>real vibe/vibe guilds</b>. Join one on vibe/vibe and turn on <b>"show me in the member list"</b> so the game can see you. There's nothing to set up in the game.</p>
     <ul>
       <li><b>Guild points</b> = the quest XP the guild's players claim this week. One member adds at most <b>1,000</b> a week, so a single whale can't carry a guild.</li>
@@ -197,7 +224,7 @@
   </section>
 
   <section id="arena">
-    <h2><span class="n">09</span>Arena: fantasy launchpad league</h2>
+    <h2><span class="n">10</span>Arena: fantasy launchpad league</h2>
     <p>Free to enter. Pick <b>5 vibe/vibe tokens</b> for the week and one <b>captain</b>. Every pick only scores what happens <b>after you picked it</b>, so picking early matters.</p>
     <div class="tbl"><table>
       <tr><th>WHAT HAPPENS</th><th>POINTS</th></tr>
@@ -216,7 +243,7 @@
   </section>
 
   <section id="seasons">
-    <h2><span class="n">10</span>Seasons &amp; badges</h2>
+    <h2><span class="n">11</span>Seasons &amp; badges</h2>
     <p>A season is one week, Monday 00:00 to Monday 00:00 UTC. When it ends the boards are archived in the Hall of Fame under <b>Past seasons</b>, and badges are handed out:</p>
     <ul>
       <li><b>FAME #1, #2, #3</b>: the top 3 questers of the week.</li>
@@ -227,7 +254,7 @@
   </section>
 
   <section id="fair">
-    <h2><span class="n">11</span>Fair play</h2>
+    <h2><span class="n">12</span>Fair play</h2>
     <ul>
       <li>Everything is checked from chain data. There's nothing to self-report.</li>
       <li>Trades under 0.002 ETH don't count. Your own launches don't count for buy or volume quests.</li>
@@ -238,7 +265,7 @@
   </section>
 
   <section id="token">
-    <h2><span class="n">12</span>$VQUEST &amp; Embers</h2>
+    <h2><span class="n">13</span>$VQUEST &amp; Embers</h2>
     <p>$VQUEST is the game's currency, launched on vibe/vibe. The economy follows three rules: <b>the game never mints tokens</b>, <b>the game never holds anyone's tokens</b>, and <b>everything is checked on chain</b>.</p>
     <h3>The Furnace: burn VQUEST, get Embers</h3>
     <div class="callout"><span class="i">⏳</span><span><b>The Furnace lights up when $VQUEST graduates on vibe/vibe.</b> Until then vibe/vibe tokens can only be bought and sold on their curve, they can't be sent anywhere, so they can't be burned yet. The Furnace shows the road to graduation live, and everything below switches on by itself the moment it graduates. The rest of the game works fully in the meantime.</span></div>
@@ -263,8 +290,10 @@
   </section>
 
   <section id="faq">
-    <h2><span class="n">13</span>FAQ</h2>
+    <h2><span class="n">14</span>FAQ</h2>
     <details><summary>Do I have to connect my wallet?</summary><p>No. You can just look at your hero by typing your address or @X handle. To play, pair instead: the game shows a tiny code amount (about 0.0002 ETH), you send exactly that to your own address on Robinhood Chain testnet, and the game unlocks a few seconds later. The ETH comes right back to you and nothing is signed on this site. Connecting a wallet is still there if you prefer it.</p></details>
+    <details><summary>Can I play without any wallet?</summary><p>Yes, press PLAY AS GUEST. The game makes a testnet wallet in your browser. Everything works, and $VQUEST drops start once that wallet has traded on vibe/vibe. The key lives only in your browser: copy it from the Hero window if you want to keep the hero, and never send real funds to it.</p></details>
+    <details><summary>Is the $VQUEST I find in the dungeon real?</summary><p>It's credited to your in-game balance and kept safe there, even if you fall. Withdrawals open once $VQUEST transfers unlock. This is a testnet game currency, not an investment.</p></details>
     <details><summary>Is signing in safe?</summary><p>You sign a plain text message with a one-time code. It's not a transaction and not an approval, so it can't move anything from your wallet.</p></details>
     <details><summary>My trade doesn't show up in a quest.</summary><p>Check that it was made after you got the quest, it was worth at least 0.002 ETH and it wasn't in your own token. Trades usually land within seconds, give it a minute if the chain is busy.</p></details>
     <details><summary>When can I use the Furnace?</summary><p>When $VQUEST graduates on vibe/vibe. Before that, vibe/vibe tokens can't be transferred, so they can't be burned. The Furnace shows how close graduation is.</p></details>

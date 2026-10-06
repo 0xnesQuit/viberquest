@@ -1,8 +1,9 @@
-node_modules/
+*.log
 .env
 .env.*
-*.log
-media/
-brand/cands.*
 GAME_DESIGN.md
 app/fonts/
+assets/
+brand/cands.*
+media/
+node_modules/
