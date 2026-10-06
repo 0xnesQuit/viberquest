@@ -69,7 +69,7 @@ async function loginWithPrivy() {
   const m = $("msg"), b = $("privybtn");
   try {
     b.disabled = true; m.className = "msg"; m.textContent = "opening the login…";
-    if (!window.VQPrivy) await import("/game/privy/privy.js?v=1");
+    if (!window.VQPrivy) await import("/game/privy/privy.js?v=2");
     const r0 = await VQPrivy.signIn(async () => (await api("nonce")).message);
     m.textContent = "signing you in…";
     const r = await api("login", { address: r0.address, signature: r0.signature, message: r0.message });

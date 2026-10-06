@@ -1,6 +1,7 @@
-// Privy login for Viberquest, bundled to app/game/privy.js (npm run build) and loaded only when someone picks
+// Privy login for Viberquest, bundled to app/game/privy/ (npm run build) and loaded only when someone picks
 // "LOGIN WITH EMAIL". Privy handles email codes and makes a wallet for people who don't have one; that wallet then
 // signs the game's normal sign-in message, so the server treats it like any other wallet.
+import "./shims.js";   // first, before Privy loads
 import React, { useRef, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { PrivyProvider, usePrivy, useWallets, useLogin } from "@privy-io/react-auth";
