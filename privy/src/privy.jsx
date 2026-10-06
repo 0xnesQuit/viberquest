@@ -17,14 +17,14 @@ const robinhood = defineChain({
 let pending = null;   // the login modal in flight: { resolve, reject }
 const state = { current: null };
 function Bridge() {
-  const { ready, authenticated, logout } = usePrivy();
+  const { ready, authenticated, logout, exportWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
   const { login } = useLogin({
     onComplete: () => { if (pending) { pending.resolve(); pending = null; } },
     onError: e => { if (pending) { pending.reject(new Error(e === "exited_auth_flow" ? "cancelled" : String(e))); pending = null; } },
   });
   const ref = useRef(null);
-  ref.current = { ready, authenticated, wallets, walletsReady, login, logout };
+  ref.current = { ready, authenticated, wallets, walletsReady, login, logout, exportWallet };
   useEffect(() => { state.current = ref.current; });
   state.current = ref.current;
   return null;
@@ -53,6 +53,12 @@ window.VQPrivy = {
     return { address: w.address, signature, message, embedded: w.walletClientType === "privy" };
   },
   async logout() { if (P().authenticated) await P().logout(); },
+  // Privy's own secure screen shows the key (the game never sees it). Needs a Privy session, so log in first if needed.
+  async exportWallet() {
+    await wait(() => P().ready, 20000, "privy");
+    if (!P().authenticated) { const done = new Promise((resolve, reject) => { pending = { resolve, reject }; }); P().login(); await done; }
+    await P().exportWallet();
+  },
 };
 
 const el = document.createElement("div"); el.id = "privy-root"; document.body.appendChild(el);

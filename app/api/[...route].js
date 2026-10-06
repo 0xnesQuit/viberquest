@@ -900,6 +900,24 @@ module.exports = async (req, res) => {
       const bal = await rpcCall("eth_call", [{ to: e.token, data: "0x70a08231" + w.replace(/^0x/, "").padStart(64, "0") }, "latest"]).catch(() => null);
       return send(res, 200, bal ? { ok: true, balance: Number(BigInt(bal) / 10n ** 14n) / 1e4 } : { ok: false, error: "rpc" });
     }
+    if (route === "profile") {   // wallet + game assets for the profile window: chain balances read live, game balances from the db
+      if (!w) return send(res, 401, { ok: false, error: "signed_out" });
+      const e = await econ(), call = (m, p) => rpcCall(m, p).catch(() => null), pad = w.replace(/^0x/, "").padStart(64, "0");
+      const [eth, vq, bal, runs, items, found] = await Promise.all([
+        call("eth_getBalance", [w, "latest"]),
+        e.token ? call("eth_call", [{ to: e.token, data: "0x70a08231" + pad }, "latest"]) : null,
+        db.query("select gold, vquest::float vquest from vq_balances where wallet=$1", [w]),
+        db.query(`select count(*)::int runs, coalesce(max(floor),0)::int best, coalesce(sum((bag->>'kills')::int),0)::int kills,
+          coalesce(sum((bag->>'bosses')::int),0)::int bosses, coalesce(sum((bag->>'chests')::int),0)::int chests from vq_runs where wallet=$1`, [w]),
+        db.query("select rarity, count(*)::int n, count(*) filter (where equipped)::int equipped from vq_items where wallet=$1 group by rarity", [w]),
+        db.query("select coalesce(sum(amount),0)::float total, coalesce(sum(amount) filter (where src='weekly'),0)::float prizes from vq_vquest_drops where wallet=$1", [w]),
+      ]);
+      const toNum = (hex, dec) => hex ? Number(BigInt(hex) / 10n ** BigInt(dec - 6)) / 1e6 : null;
+      return send(res, 200, { ok: true, wallet: w, token: e.token || null, graduated: !!e.live,
+        chain: { eth: toNum(eth, 18), vquest: toNum(vq, 18) },
+        game: { gold: Number((bal.rows[0] || {}).gold || 0), vquest: Number((bal.rows[0] || {}).vquest || 0), vquest_found: found.rows[0].total, vquest_prizes: found.rows[0].prizes },
+        items: Object.fromEntries(items.rows.map(r => [r.rarity, { n: r.n, equipped: r.equipped }])), dungeon: runs.rows[0] });
+    }
     if (route === "treasury") return send(res, 200, { ok: true, ...(await treasury()) });
     if (route === "seasons") return send(res, 200, { ok: true, ...(await seasons(u.searchParams.get("week"))) });
     if (route === "guild") return send(res, 200, { ok: true, ...(await guildSeason(w)) });

@@ -69,11 +69,12 @@ async function loginWithPrivy() {
   const m = $("msg"), b = $("privybtn");
   try {
     b.disabled = true; m.className = "msg"; m.textContent = "opening the login…";
-    if (!window.VQPrivy) await import("/game/privy/privy.js?v=2");
+    if (!window.VQPrivy) await import("/game/privy/privy.js?v=3");
     const r0 = await VQPrivy.signIn(async () => (await api("nonce")).message);
     m.textContent = "signing you in…";
     const r = await api("login", { address: r0.address, signature: r0.signature, message: r0.message });
     if (!r.ok) throw new Error(r.error);
+    try { localStorage.setItem("vq_privy_addr", r0.address.toLowerCase()); } catch (_) { }
     m.textContent = ""; sfx.win(); await load(); banner("WELCOME", r0.embedded ? "your hero has its own wallet now, made by Privy" : "your quests are on the board");
   } catch (e) { m.className = "msg err"; m.textContent = /cancel/i.test(e && e.message) ? "login cancelled" : "could not log in: " + (e.message || e); }
   b.disabled = false;
@@ -84,6 +85,68 @@ async function loginWithPrivy() {
   b.onclick = () => { sfx.click(); loginWithPrivy(); }; ways.insertBefore(b, $("pairbtn"));
   $("out").addEventListener("click", () => { if (window.VQPrivy) VQPrivy.logout().catch(() => {}); });
 })();
+
+// ---- profile: a button top right (avatar + short address) and a window with wallet, tokens and game assets
+const isPrivy = () => { try { return !!(ME && localStorage.getItem("vq_privy_addr") === ME.wallet); } catch (_) { return false; } };
+const EXPLORER = "https://explorer.testnet.chain.robinhood.com";
+let profSeen = "";
+setInterval(() => {   // keep the button in sync with who is signed in
+  const b = $("prof"), k = ME ? ME.wallet + (ME.watch ? "w" : "") : "";
+  if (k === profSeen) return; profSeen = k; b.hidden = !ME;
+  if (!ME) return;
+  $("profaddr").textContent = ME.watch ? "WATCHING" : short(ME.wallet);
+  const cv = $("profcv"), g = cv.getContext("2d"); g.clearRect(0, 0, 32, 32); Viber.draw(g, ME.wallet, ME.cls, ME.level, 0, 0, 1);
+}, 500);
+$("prof").onclick = () => { sfx.click(); openWin("profile"); };
+function renderProfile(wt, wb) {
+  const m = ME; if (!m) return closeWin();
+  const kind = m.watch ? "WATCHING" : isGuest() ? "GUEST" : isPrivy() ? "EMAIL (PRIVY)" : "WALLET";
+  wt.innerHTML = `PROFILE<small>your wallet, tokens and game assets</small>`;
+  wb.innerHTML = `<p class="note">loading…</p>`;
+  (m.watch ? Promise.resolve(null) : api("profile").catch(() => null)).then(p => {
+    if (current !== "profile") return;
+    const num = (v, d = 4) => v == null ? "-" : fmt(v, d);
+    const it = (p && p.items) || {}, gearN = Object.values(it).reduce((a, x) => a + x.n, 0), dg = (p && p.dungeon) || {};
+    wb.innerHTML = `<div class="prof">
+      <div class="ptop"><canvas id="profbig" width="32" height="32"></canvas><div>
+        <div><span class="tag">${kind}</span><span class="tag">LV ${m.level}</span><span class="tag">${esc(m.cls)}</span></div>
+        <div class="addr" style="margin-top:6px">${esc(m.wallet)}</div>
+        <div class="links"><button id="pcopy">COPY ADDRESS</button><a href="${EXPLORER}/address/${m.wallet}" target="_blank" rel="noopener">EXPLORER ↗</a><a href="/h/${m.wallet}" target="_blank" rel="noopener">HERO CARD ↗</a></div>
+      </div></div>
+      ${p ? `<span class="k">ON CHAIN · ROBINHOOD TESTNET</span>
+      <div class="grid">
+        <div><span class="k">ETH</span><b>${num(p.chain.eth)}</b><small>for gas and trading</small></div>
+        <div><span class="k">$VQUEST</span><b style="color:var(--lime)">${num(p.chain.vquest, 2)}</b><small>${p.graduated ? "in your wallet" : "in your wallet · transfers unlock at graduation"}</small></div>
+        <div><span class="k">TOKEN</span><b style="font-size:10px">${p.token ? short(p.token) : "-"}</b><small>${p.token ? `<a href="${EXPLORER}/token/${p.token}" target="_blank" rel="noopener">view ↗</a>` : ""}</small></div>
+      </div>
+      <span class="k">IN GAME</span>
+      <div class="grid">
+        <div><span class="k">$VQUEST FOUND</span><b style="color:var(--lime)">${fmt(p.game.vquest)}</b><small>dungeon drops${p.game.vquest_prizes ? ` + ${fmt(p.game.vquest_prizes)} weekly prizes` : ""}. withdrawals open once transfers unlock</small></div>
+        <div><span class="k">GOLD</span><b style="color:#ffd23f">${fmt(p.game.gold)}</b><small>potions, extra runs, gear boxes</small></div>
+        <div><span class="k">EMBERS</span><b style="color:#ff9a3c">${fmt(m.embers || 0)}</b><small>from the Furnace</small></div>
+        <div><span class="k">XP</span><b>${fmt(m.xp || 0)}</b><small>level ${m.level}</small></div>
+        <div><span class="k">GEAR</span><b>${gearN}</b><small>${Object.entries(it).map(([r, x]) => `${x.n} ${r}`).join(", ") || "none yet"}</small></div>
+        <div><span class="k">MATERIALS</span><b style="font-size:11px">${Object.entries(m.materials || {}).filter(([, n]) => n > 0).map(([k, n]) => `${gem(k)}${n}`).join(" ") || "-"}</b><small>for the Forge</small></div>
+      </div>
+      <span class="k">DUNGEON</span>
+      <div class="grid">
+        <div><span class="k">DEEPEST FLOOR</span><b>${dg.best || 0}</b><small>${dg.runs || 0} runs</small></div>
+        <div><span class="k">MONSTERS</span><b>${fmt(dg.kills || 0)}</b><small>${dg.bosses || 0} bosses</small></div>
+        <div><span class="k">CHESTS</span><b>${fmt(dg.chests || 0)}</b><small>opened</small></div>
+      </div>` : `<p class="note">you are only looking around. pair or sign in to see balances.</p>`}
+      ${guestPanel()}
+      ${isPrivy() ? `<div class="guestbox"><b>EMAIL WALLET</b><p>Privy made this wallet for your email. You can export its key to use it in any wallet app. Testnet only.</p><button class="btn ghost" id="pexport">EXPORT KEY</button></div>` : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn ghost" data-open="hero">HERO &amp; GEAR</button><button class="btn ghost" data-open="dungeon">DUNGEON</button><button class="btn ghost" id="pout">SIGN OUT</button></div>
+    </div>`;
+    const cv = $("profbig").getContext("2d"); Viber.draw(cv, m.wallet, m.cls, m.level, 0, 0, 1);
+    $("pcopy").onclick = () => { navigator.clipboard.writeText(m.wallet).then(() => toast("address copied")).catch(() => { }); };
+    $("pout").onclick = () => { closeWin(); $("out").click(); };
+    wb.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openWin(b.dataset.open));
+    const ex = $("pexport"); if (ex) ex.onclick = async () => {
+      try { if (!window.VQPrivy) await import("/game/privy/privy.js?v=3"); await VQPrivy.exportWallet(); } catch (e) { toast("could not open the export: " + (e.message || e)); }
+    };
+  });
+}
 
 // ---- town NPCs: a few vibers who live here, standing by their buildings or walking the streets
 const NPCS_DEF = [
