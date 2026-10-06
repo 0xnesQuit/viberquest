@@ -1162,7 +1162,7 @@ setInterval(() => { if (current === "forge" || current === "hero" || current ===
 setInterval(async () => { if (!ME) return; const f = await api("fantasy").catch(() => null); if (f && f.ok) { FAN = f; if (current === "arena") renderArena(); } }, 120_000);
 load();
 </script>
-<script src="/game/extras.js?v=2"></script>
+<script src="/game/extras.js?v=3"></script>
 <script src="/game/dungeon.js?v=9"></script>
 </body>
 </html>

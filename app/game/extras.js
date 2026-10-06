@@ -64,6 +64,27 @@ document.addEventListener("click", e => {
   const c = $("gkey"); c.hidden = !c.hidden; c.textContent = c.hidden ? "" : guestKey(); e.target.textContent = c.hidden ? "SHOW KEY" : "HIDE KEY";
 });
 
+// ---- Privy: email login (Privy makes a wallet for people who don't have one), loaded only on click
+async function loginWithPrivy() {
+  const m = $("msg"), b = $("privybtn");
+  try {
+    b.disabled = true; m.className = "msg"; m.textContent = "opening the login…";
+    if (!window.VQPrivy) await import("/game/privy/privy.js?v=1");
+    const r0 = await VQPrivy.signIn(async () => (await api("nonce")).message);
+    m.textContent = "signing you in…";
+    const r = await api("login", { address: r0.address, signature: r0.signature, message: r0.message });
+    if (!r.ok) throw new Error(r.error);
+    m.textContent = ""; sfx.win(); await load(); banner("WELCOME", r0.embedded ? "your hero has its own wallet now, made by Privy" : "your quests are on the board");
+  } catch (e) { m.className = "msg err"; m.textContent = /cancel/i.test(e && e.message) ? "login cancelled" : "could not log in: " + (e.message || e); }
+  b.disabled = false;
+}
+(function () {
+  const ways = document.querySelector("#welcome .ways"); if (!ways) return;
+  const b = document.createElement("button"); b.className = "btn lime"; b.id = "privybtn"; b.textContent = "LOGIN WITH EMAIL";
+  b.onclick = () => { sfx.click(); loginWithPrivy(); }; ways.insertBefore(b, $("pairbtn"));
+  $("out").addEventListener("click", () => { if (window.VQPrivy) VQPrivy.logout().catch(() => {}); });
+})();
+
 // ---- town NPCs: a few vibers who live here, standing by their buildings or walking the streets
 const NPCS_DEF = [
   { id: "gatekeeper", name: "GATEKEEPER", door: "dungeon", dx: 34, dy: -4, cls: "Whale", lines: ["the gate is open. monsters below, chests too", "bosses guard every 5th floor", "walk out with the stairs and you keep the whole bag"] },
